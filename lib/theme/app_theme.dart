@@ -7,8 +7,8 @@ class AppColors {
   static const Color darkBg = Color(0xFF000000);
   static const Color darkSurface = Color(0xFF111111);
   static const Color darkBorder = Color(0xFF2A2A2A);
-  static const Color lightBg = Color(0xFFFAF7F2);
-  static const Color lightBgSecondary = Color(0xFFF3EEE4);
+  static const Color lightBg = Color(0xFFF5EFE3);
+  static const Color lightBgSecondary = Color(0xFFE8DCC5);
   static const Color lightSurface = Color(0xFFF7F7F7);
 }
 
