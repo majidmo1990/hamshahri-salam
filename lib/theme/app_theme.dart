@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 class AppColors {
   static const Color primaryBlue = Color(0xFF0C447C);
@@ -13,14 +12,15 @@ class AppColors {
 }
 
 class AppTheme {
+  static const String fontFamily = 'Vazirmatn';
+
   static ThemeData get lightTheme {
     return ThemeData(
       brightness: Brightness.light,
       scaffoldBackgroundColor: AppColors.lightBg,
       primaryColor: AppColors.primaryBlue,
-      fontFamily: GoogleFonts.vazirmatn().fontFamily,
-      textTheme: GoogleFonts.vazirmatnTextTheme(),
-      colorScheme: ColorScheme.light(
+      fontFamily: fontFamily,
+      colorScheme: const ColorScheme.light(
         primary: AppColors.primaryBlue,
         secondary: AppColors.lightBlue,
         surface: AppColors.lightSurface,
@@ -38,9 +38,8 @@ class AppTheme {
       brightness: Brightness.dark,
       scaffoldBackgroundColor: AppColors.darkBg,
       primaryColor: AppColors.primaryBlue,
-      fontFamily: GoogleFonts.vazirmatn().fontFamily,
-      textTheme: GoogleFonts.vazirmatnTextTheme(ThemeData.dark().textTheme),
-      colorScheme: ColorScheme.dark(
+      fontFamily: fontFamily,
+      colorScheme: const ColorScheme.dark(
         primary: AppColors.primaryBlue,
         secondary: AppColors.lightBlue,
         surface: AppColors.darkSurface,
