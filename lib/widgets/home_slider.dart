@@ -16,18 +16,15 @@ class _HomeSliderState extends State<HomeSlider> {
 
   final List<Map<String, String>> _slides = [
     {
-      'image':
-          'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=800',
+      'image': 'assets/images/slider1.jpg',
       'title': 'خانه رویایی شما اینجاست',
     },
     {
-      'image':
-          'https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=800',
-      'title': 'ویلاهای لوکس و مدرن',
+      'image': 'assets/images/slider2.jpg',
+      'title': 'ملک‌های متنوع و متناسب',
     },
     {
-      'image':
-          'https://images.unsplash.com/photo-1613977257363-707ba9348227?w=800',
+      'image': 'assets/images/slider3.jpg',
       'title': 'بهترین قیمت‌های بازار',
     },
   ];
@@ -55,22 +52,9 @@ class _HomeSliderState extends State<HomeSlider> {
               return Stack(
                 fit: StackFit.expand,
                 children: [
-                  Image.network(
+                  Image.asset(
                     slide['image']!,
                     fit: BoxFit.cover,
-                    loadingBuilder: (context, child, progress) {
-                      if (progress == null) return child;
-                      return Container(
-                        color: isDark
-                            ? AppColors.darkSurface
-                            : AppColors.skyBlue,
-                        child: const Center(
-                          child: CircularProgressIndicator(
-                            color: AppColors.primaryBlue,
-                          ),
-                        ),
-                      );
-                    },
                     errorBuilder: (context, error, stackTrace) {
                       return Container(
                         color: isDark

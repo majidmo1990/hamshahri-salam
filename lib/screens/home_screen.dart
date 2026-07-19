@@ -3,6 +3,7 @@ import '../theme/app_theme.dart';
 import '../widgets/home_slider.dart';
 import '../widgets/action_cards.dart';
 import '../widgets/bottom_nav.dart';
+import 'property_type_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -18,36 +19,43 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
-    return Scaffold(
-      backgroundColor: isDark ? AppColors.darkBg : AppColors.lightBg,
-      body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.fromLTRB(16, 12, 16, 20),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              _buildTopBar(isDark),
-              const SizedBox(height: 16),
-              const HomeSlider(),
-              const SizedBox(height: 20),
-              ActionCards(
-                onViewProperties: () {
-                  // بعداً: هدایت به صفحه لیست ملک‌ها
-                },
-                onAddProperty: () {
-                  // بعداً: هدایت به صفحه ثبت ملک
-                },
-              ),
-            ],
+    return Directionality(
+      textDirection: TextDirection.rtl,
+      child: Scaffold(
+        backgroundColor: isDark ? AppColors.darkBg : AppColors.lightBg,
+        body: SafeArea(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.fromLTRB(16, 12, 16, 20),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                _buildTopBar(isDark),
+                const SizedBox(height: 16),
+                const HomeSlider(),
+                const SizedBox(height: 20),
+                ActionCards(
+                  onViewProperties: () {
+                    // بعداً: هدایت به صفحه لیست ملک‌ها
+                  },
+                  onAddProperty: () {
+                    Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (_) => const PropertyTypeScreen(),
+                      ),
+                    );
+                  },
+                ),
+              ],
+            ),
           ),
         ),
-      ),
-      bottomNavigationBar: BottomNav(
-        currentIndex: _navIndex,
-        onTap: (index) {
-          setState(() => _navIndex = index);
-          // بعداً: سوییچ بین صفحات پروفایل/علاقه‌مندی/رزرو/جستجو
-        },
+        bottomNavigationBar: BottomNav(
+          currentIndex: _navIndex,
+          onTap: (index) {
+            setState(() => _navIndex = index);
+            // بعداً: سوییچ بین صفحات پروفایل/علاقه‌مندی/رزرو/جستجو
+          },
+        ),
       ),
     );
   }
