@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../theme/app_theme.dart';
+import '../widgets/property_details_step.dart';
 import 'property_type_screen.dart';
 import 'category_selection_screen.dart';
 
@@ -75,7 +76,12 @@ class _PropertyFormScreenState extends State<PropertyFormScreen> {
                   physics: const NeverScrollableScrollPhysics(),
                   children: [
                     _buildStep1(isDark, isRent),
-                    _buildPlaceholderStep('جزئیات (به‌زودی)'),
+                    PropertyDetailsStep(
+                      categoryId: widget.category.id,
+                      formData: formData,
+                      onNext: () => _goToStep(2),
+                      onBack: () => _goToStep(0),
+                    ),
                     _buildPlaceholderStep('تصاویر (به‌زودی)'),
                   ],
                 ),
