@@ -102,32 +102,17 @@ class _SplashScreenState extends State<SplashScreen>
                 const Spacer(flex: 2),
                 FadeTransition(
                   opacity: _fadeAnimation,
-                  child: Column(
-                    children: [
-                      Text(
-                        'در حال بارگذاری...',
-                        style: TextStyle(
-                          fontSize: 14,
-                          color: isDark ? Colors.white70 : Colors.black54,
-                        ),
-                      ),
-                      const SizedBox(height: 12),
-                      ClipRRect(
-                        borderRadius: BorderRadius.circular(10),
-                        child: LinearProgressIndicator(
-                          minHeight: 6,
-                          backgroundColor: isDark
-                              ? AppColors.darkSurface
-                              : AppColors.skyBlue,
-                          valueColor: const AlwaysStoppedAnimation<Color>(
-                            AppColors.primaryBlue,
-                          ),
-                        ),
-                      ),
-                    ],
+                  child: Text(
+                    'خانه‌ای که دنبالش می‌گردی، همین‌جاست',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w500,
+                      color: isDark ? Colors.white70 : AppColors.primaryBlue,
+                    ),
                   ),
                 ),
-                const SizedBox(height: 40),
+                const SizedBox(height: 50),
               ],
             ),
           ),
