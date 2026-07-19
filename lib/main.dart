@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'theme/app_theme.dart';
 import 'theme/theme_provider.dart';
@@ -19,6 +20,20 @@ class HamshahriSalamApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final themeProvider = Provider.of<ThemeProvider>(context);
+    final isDark = themeProvider.themeMode == ThemeMode.dark;
+
+    SystemChrome.setSystemUIOverlayStyle(
+      SystemUiOverlayStyle(
+        statusBarColor: Colors.transparent,
+        statusBarIconBrightness:
+            isDark ? Brightness.light : Brightness.dark,
+        systemNavigationBarColor:
+            isDark ? AppColors.darkBg : AppColors.lightBg,
+        systemNavigationBarIconBrightness:
+            isDark ? Brightness.light : Brightness.dark,
+      ),
+    );
+
     return MaterialApp(
       title: 'همشهری سلام',
       debugShowCheckedModeBanner: false,
@@ -26,10 +41,7 @@ class HamshahriSalamApp extends StatelessWidget {
       theme: AppTheme.lightTheme,
       darkTheme: AppTheme.darkTheme,
       themeMode: themeProvider.themeMode,
-      home: const Directionality(
-        textDirection: TextDirection.rtl,
-        child: SplashScreen(),
-      ),
+      home: const SplashScreen(),
     );
   }
 }

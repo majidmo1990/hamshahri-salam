@@ -35,7 +35,7 @@ class _SplashScreenState extends State<SplashScreen>
     );
 
     _slideAnimation = Tween<Offset>(
-      begin: const Offset(0, 0.3),
+      begin: const Offset(0, -0.3),
       end: Offset.zero,
     ).animate(
       CurvedAnimation(parent: _controller, curve: Curves.easeOutCubic),
@@ -69,51 +69,62 @@ class _SplashScreenState extends State<SplashScreen>
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
-    return Scaffold(
-      body: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: isDark
-                ? [AppColors.darkBg, const Color(0xFF0A0F16)]
-                : [AppColors.lightBg, AppColors.lightBgSecondary],
-          ),
-        ),
-        child: SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 32),
-            child: Column(
-              children: [
-                const Spacer(flex: 3),
-                SlideTransition(
-                  position: _slideAnimation,
-                  child: FadeTransition(
-                    opacity: _fadeAnimation,
-                    child: ScaleTransition(
-                      scale: _scaleAnimation,
-                      child: Image.asset(
-                        'assets/images/logo.png',
-                        width: 220,
+    return Directionality(
+      textDirection: TextDirection.rtl,
+      child: Scaffold(
+        backgroundColor:
+            isDark ? AppColors.darkBg : AppColors.lightBg,
+        body: SizedBox.expand(
+          child: Container(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: isDark
+                    ? [AppColors.darkBg, const Color(0xFF0A0F16)]
+                    : [AppColors.lightBg, AppColors.lightBgSecondary],
+              ),
+            ),
+            child: SafeArea(
+              child: Center(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 32),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      SlideTransition(
+                        position: _slideAnimation,
+                        child: FadeTransition(
+                          opacity: _fadeAnimation,
+                          child: ScaleTransition(
+                            scale: _scaleAnimation,
+                            child: Image.asset(
+                              'assets/images/logo.png',
+                              width: 220,
+                            ),
+                          ),
+                        ),
                       ),
-                    ),
+                      const SizedBox(height: 60),
+                      FadeTransition(
+                        opacity: _fadeAnimation,
+                        child: Text(
+                          'خانه‌ای که دنبالش می‌گردی، همین‌جاست',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w500,
+                            color: isDark
+                                ? Colors.white70
+                                : AppColors.primaryBlue,
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
-                const Spacer(flex: 2),
-                FadeTransition(
-                  opacity: _fadeAnimation,
-                  child: Text(
-                    'خانه‌ای که دنبالش می‌گردی، همین‌جاست',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w500,
-                      color: isDark ? Colors.white70 : AppColors.primaryBlue,
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 50),
-              ],
+              ),
             ),
           ),
         ),
