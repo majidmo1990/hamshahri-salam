@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../theme/app_theme.dart';
 import 'property_type_screen.dart';
+import 'property_form_screen.dart';
 
 class PropertyCategory {
   final String id;
@@ -93,7 +94,14 @@ class CategorySelectionScreen extends StatelessWidget {
             return _CategoryTile(
               category: category,
               onTap: () {
-                // قدم بعدی: هدایت به فرم ثبت مشخصات ملک
+                Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (_) => PropertyFormScreen(
+                      dealType: dealType,
+                      category: category,
+                    ),
+                  ),
+                );
               },
             );
           },
