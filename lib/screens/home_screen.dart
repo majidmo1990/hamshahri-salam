@@ -3,6 +3,7 @@ import '../theme/app_theme.dart';
 import '../widgets/home_slider.dart';
 import '../widgets/action_cards.dart';
 import '../widgets/bottom_nav.dart';
+import '../widgets/property_card.dart';
 import 'property_type_screen.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -14,6 +15,33 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   int _navIndex = 0;
+
+  final List<PropertyPreview> _popularProperties = const [
+    PropertyPreview(
+      title: 'آپارتمان ۱۲۰ متری',
+      location: 'سعادت‌آباد',
+      price: '۳ میلیارد تومان',
+      area: '۱۲۰ متر',
+      imageUrl: 'assets/images/slider1.jpg',
+      views: 340,
+    ),
+    PropertyPreview(
+      title: 'مغازه تجاری',
+      location: 'خیابان ولیعصر',
+      price: 'رهن ۲۰۰ / اجاره ۱۵',
+      area: '۴۵ متر',
+      imageUrl: 'assets/images/slider2.jpg',
+      views: 210,
+    ),
+    PropertyPreview(
+      title: 'زمین مزروعی',
+      location: 'کرج، اطراف',
+      price: '۸۰۰ میلیون تومان',
+      area: '۱۰۰۰ متر',
+      imageUrl: 'assets/images/slider3.jpg',
+      views: 150,
+    ),
+  ];
 
   @override
   Widget build(BuildContext context) {
@@ -45,6 +73,29 @@ class _HomeScreenState extends State<HomeScreen> {
                     );
                   },
                 ),
+                const SizedBox(height: 24),
+                Text(
+                  'پربازدیدترین‌ها',
+                  style: TextStyle(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w700,
+                    color: isDark ? Colors.white : Colors.black87,
+                  ),
+                ),
+                const SizedBox(height: 12),
+                SizedBox(
+                  height: 210,
+                  child: ListView.separated(
+                    scrollDirection: Axis.horizontal,
+                    itemCount: _popularProperties.length,
+                    separatorBuilder: (_, __) => const SizedBox(width: 12),
+                    itemBuilder: (context, index) {
+                      return PropertyCard(
+                        property: _popularProperties[index],
+                      );
+                    },
+                  ),
+                ),
               ],
             ),
           ),
@@ -53,7 +104,6 @@ class _HomeScreenState extends State<HomeScreen> {
           currentIndex: _navIndex,
           onTap: (index) {
             setState(() => _navIndex = index);
-            // بعداً: سوییچ بین صفحات پروفایل/علاقه‌مندی/رزرو/جستجو
           },
         ),
       ),
