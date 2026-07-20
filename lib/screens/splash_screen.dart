@@ -14,7 +14,10 @@ class _SplashScreenState extends State<SplashScreen>
   late final AnimationController _controller;
   late final Animation<double> _fadeAnimation;
   late final Animation<double> _scaleAnimation;
-  late final Animation<Offset> _slideAnimation;
+  late final Animation<double> _rotateAnimation;
+  late final Animation<Offset> _textSlideAnimation;
+
+  bool _imageReady = false;
 
   @override
   void initState() {
@@ -22,28 +25,49 @@ class _SplashScreenState extends State<SplashScreen>
 
     _controller = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 1600),
+      duration: const Duration(milliseconds: 1800),
     );
 
     _fadeAnimation = CurvedAnimation(
       parent: _controller,
-      curve: const Interval(0.0, 0.8, curve: Curves.easeIn),
+      curve: const Interval(0.0, 0.5, curve: Curves.easeIn),
     );
 
-    _scaleAnimation = Tween<double>(begin: 0.4, end: 1.0).animate(
-      CurvedAnimation(parent: _controller, curve: Curves.easeOutBack),
+    _scaleAnimation = Tween<double>(begin: 0.3, end: 1.0).animate(
+      CurvedAnimation(
+        parent: _controller,
+        curve: const Interval(0.0, 0.75, curve: Curves.elasticOut),
+      ),
     );
 
-    _slideAnimation = Tween<Offset>(
-      begin: const Offset(0, -0.3),
+    _rotateAnimation = Tween<double>(begin: -0.15, end: 0.0).animate(
+      CurvedAnimation(
+        parent: _controller,
+        curve: const Interval(0.0, 0.75, curve: Curves.easeOutCubic),
+      ),
+    );
+
+    _textSlideAnimation = Tween<Offset>(
+      begin: const Offset(0, 0.4),
       end: Offset.zero,
     ).animate(
-      CurvedAnimation(parent: _controller, curve: Curves.easeOutCubic),
+      CurvedAnimation(
+        parent: _controller,
+        curve: const Interval(0.5, 1.0, curve: Curves.easeOutCubic),
+      ),
     );
 
-    _controller.forward();
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      await precacheImage(
+        const AssetImage('assets/images/logo.png'),
+        context,
+      );
+      if (!mounted) return;
+      setState(() => _imageReady = true);
+      _controller.forward();
+    });
 
-    Future.delayed(const Duration(milliseconds: 3800), () {
+    Future.delayed(const Duration(milliseconds: 3500), () {
       if (mounted) {
         Navigator.of(context).pushReplacement(
           PageRouteBuilder(
@@ -72,8 +96,7 @@ class _SplashScreenState extends State<SplashScreen>
     return Directionality(
       textDirection: TextDirection.rtl,
       child: Scaffold(
-        backgroundColor:
-            isDark ? AppColors.darkBg : AppColors.lightBg,
+        backgroundColor: isDark ? AppColors.darkBg : AppColors.lightBg,
         body: SizedBox.expand(
           child: Container(
             decoration: BoxDecoration(
@@ -93,31 +116,46 @@ class _SplashScreenState extends State<SplashScreen>
                     mainAxisAlignment: MainAxisAlignment.center,
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
-                      SlideTransition(
-                        position: _slideAnimation,
-                        child: FadeTransition(
-                          opacity: _fadeAnimation,
-                          child: ScaleTransition(
-                            scale: _scaleAnimation,
-                            child: Image.asset(
-                              'assets/images/logo.png',
-                              width: 220,
-                            ),
+                      Opacity(
+                        opacity: _imageReady ? 1 : 0,
+                        child: AnimatedBuilder(
+                          animation: _controller,
+                          builder: (context, child) {
+                            return Transform.rotate(
+                              angle: _rotateAnimation.value,
+                              child: Transform.scale(
+                                scale: _scaleAnimation.value,
+                                child: Opacity(
+                                  opacity: _fadeAnimation.value,
+                                  child: child,
+                                ),
+                              ),
+                            );
+                          },
+                          child: Image.asset(
+                            'assets/images/logo.png',
+                            width: 220,
                           ),
                         ),
                       ),
                       const SizedBox(height: 60),
-                      FadeTransition(
-                        opacity: _fadeAnimation,
-                        child: Text(
-                          'خانه‌ای که دنبالش می‌گردی، همین‌جاست',
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w500,
-                            color: isDark
-                                ? Colors.white70
-                                : AppColors.primaryBlue,
+                      SlideTransition(
+                        position: _textSlideAnimation,
+                        child: FadeTransition(
+                          opacity: CurvedAnimation(
+                            parent: _controller,
+                            curve: const Interval(0.5, 1.0, curve: Curves.easeIn),
+                          ),
+                          child: Text(
+                            'خانه‌ای که دنبالش می‌گردی، همین‌جاست',
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w500,
+                              color: isDark
+                                  ? Colors.white70
+                                  : AppColors.primaryBlue,
+                            ),
                           ),
                         ),
                       ),
