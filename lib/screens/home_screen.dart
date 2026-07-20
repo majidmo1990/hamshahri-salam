@@ -5,6 +5,7 @@ import '../widgets/action_cards.dart';
 import '../widgets/bottom_nav.dart';
 import '../widgets/property_card.dart';
 import 'property_type_screen.dart';
+import 'property_list_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -63,7 +64,11 @@ class _HomeScreenState extends State<HomeScreen> {
                 const SizedBox(height: 20),
                 ActionCards(
                   onViewProperties: () {
-                    // بعداً: هدایت به صفحه لیست ملک‌ها
+                    Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (_) => const PropertyListScreen(),
+                      ),
+                    );
                   },
                   onAddProperty: () {
                     Navigator.of(context).push(
@@ -74,13 +79,35 @@ class _HomeScreenState extends State<HomeScreen> {
                   },
                 ),
                 const SizedBox(height: 24),
-                Text(
-                  'پربازدیدترین‌ها',
-                  style: TextStyle(
-                    fontSize: 15,
-                    fontWeight: FontWeight.w700,
-                    color: isDark ? Colors.white : Colors.black87,
-                  ),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      'پربازدیدترین‌ها',
+                      style: TextStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.w700,
+                        color: isDark ? Colors.white : Colors.black87,
+                      ),
+                    ),
+                    GestureDetector(
+                      onTap: () {
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (_) => const PropertyListScreen(),
+                          ),
+                        );
+                      },
+                      child: const Text(
+                        'مشاهده همه',
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: AppColors.primaryBlue,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
                 const SizedBox(height: 12),
                 SizedBox(
