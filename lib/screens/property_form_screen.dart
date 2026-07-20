@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import '../theme/app_theme.dart';
 import '../widgets/property_details_step.dart';
+import '../widgets/media_upload_step.dart';
 import 'property_type_screen.dart';
 import 'category_selection_screen.dart';
+import 'home_screen.dart';
 
 class PropertyFormScreen extends StatefulWidget {
   final DealType dealType;
@@ -52,6 +54,88 @@ class _PropertyFormScreenState extends State<PropertyFormScreen> {
     );
   }
 
+  Future<void> _submitProperty() async {
+    // شبیه‌سازی زمان ارسال به سرور (بعداً با ارسال واقعی جایگزین می‌شود)
+    await Future.delayed(const Duration(milliseconds: 900));
+
+    if (!mounted) return;
+
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) {
+        final isDark = Theme.of(context).brightness == Brightness.dark;
+        return Dialog(
+          backgroundColor: isDark ? AppColors.darkSurface : Colors.white,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.all(24),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(14),
+                  decoration: BoxDecoration(
+                    color: AppColors.primaryBlue.withValues(alpha: 0.12),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(
+                    Icons.hourglass_top_rounded,
+                    color: AppColors.primaryBlue,
+                    size: 34,
+                  ),
+                ),
+                const SizedBox(height: 18),
+                Text(
+                  'ملک شما با موفقیت ثبت شد',
+                  style: TextStyle(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w700,
+                    color: isDark ? Colors.white : Colors.black87,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  'آگهی شما در حال بررسی توسط مدیریت است و پس از تایید، در لیست ملک‌های قابل مشاهده قرار می‌گیرد.',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: 12.5,
+                    color: isDark ? Colors.grey[400] : Colors.grey[600],
+                  ),
+                ),
+                const SizedBox(height: 22),
+                SizedBox(
+                  width: double.infinity,
+                  height: 46,
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.primaryBlue,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                    onPressed: () {
+                      Navigator.of(context).pushAndRemoveUntil(
+                        MaterialPageRoute(builder: (_) => const HomeScreen()),
+                        (route) => false,
+                      );
+                    },
+                    child: const Text(
+                      'بازگشت به صفحه اصلی',
+                      style: TextStyle(color: Colors.white),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
@@ -82,7 +166,10 @@ class _PropertyFormScreenState extends State<PropertyFormScreen> {
                       onNext: () => _goToStep(2),
                       onBack: () => _goToStep(0),
                     ),
-                    _buildPlaceholderStep('تصاویر (به‌زودی)'),
+                    MediaUploadStep(
+                      onBack: () => _goToStep(1),
+                      onSubmit: _submitProperty,
+                    ),
                   ],
                 ),
               ),
@@ -201,10 +288,6 @@ class _PropertyFormScreenState extends State<PropertyFormScreen> {
         ],
       ),
     );
-  }
-
-  Widget _buildPlaceholderStep(String label) {
-    return Center(child: Text(label));
   }
 
   Widget _fieldLabel(String text, bool isDark) {
