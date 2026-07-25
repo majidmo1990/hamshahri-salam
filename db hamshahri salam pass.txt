@@ -1,0 +1,5 @@
+db : 
+hamshahri_salam
+pass:
+gAdaikzWccTSifZC
+

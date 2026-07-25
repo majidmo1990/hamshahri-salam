@@ -14,6 +14,7 @@ class _PropertyListScreenState extends State<PropertyListScreen> {
 
   final List<PropertyPreview> _allProperties = const [
     PropertyPreview(
+      id: 'prop1',
       title: 'آپارتمان ۱۲۰ متری',
       location: 'سعادت‌آباد',
       price: '۳ میلیارد تومان',
@@ -22,6 +23,7 @@ class _PropertyListScreenState extends State<PropertyListScreen> {
       views: 340,
     ),
     PropertyPreview(
+      id: 'prop2',
       title: 'مغازه تجاری',
       location: 'خیابان ولیعصر',
       price: 'رهن ۲۰۰ / اجاره ۱۵',
@@ -30,6 +32,7 @@ class _PropertyListScreenState extends State<PropertyListScreen> {
       views: 210,
     ),
     PropertyPreview(
+      id: 'prop3',
       title: 'زمین مزروعی',
       location: 'کرج، اطراف',
       price: '۸۰۰ میلیون تومان',
@@ -38,6 +41,7 @@ class _PropertyListScreenState extends State<PropertyListScreen> {
       views: 150,
     ),
     PropertyPreview(
+      id: 'prop4',
       title: 'واحد ویلایی نوساز',
       location: 'لواسان',
       price: 'رهن ۵۰۰ / اجاره ۴۰',

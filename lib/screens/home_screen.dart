@@ -19,6 +19,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   final List<PropertyPreview> _popularProperties = const [
     PropertyPreview(
+      id: 'prop1',
       title: 'آپارتمان ۱۲۰ متری',
       location: 'سعادت‌آباد',
       price: '۳ میلیارد تومان',
@@ -27,6 +28,7 @@ class _HomeScreenState extends State<HomeScreen> {
       views: 340,
     ),
     PropertyPreview(
+      id: 'prop2',
       title: 'مغازه تجاری',
       location: 'خیابان ولیعصر',
       price: 'رهن ۲۰۰ / اجاره ۱۵',
@@ -35,6 +37,7 @@ class _HomeScreenState extends State<HomeScreen> {
       views: 210,
     ),
     PropertyPreview(
+      id: 'prop3',
       title: 'زمین مزروعی',
       location: 'کرج، اطراف',
       price: '۸۰۰ میلیون تومان',
