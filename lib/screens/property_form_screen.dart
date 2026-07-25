@@ -4,7 +4,7 @@ import '../widgets/property_details_step.dart';
 import '../widgets/media_upload_step.dart';
 import 'property_type_screen.dart';
 import 'category_selection_screen.dart';
-import 'home_screen.dart';
+import 'main_navigation_screen.dart';
 
 class PropertyFormScreen extends StatefulWidget {
   final DealType dealType;
@@ -118,7 +118,7 @@ class _PropertyFormScreenState extends State<PropertyFormScreen> {
                     ),
                     onPressed: () {
                       Navigator.of(context).pushAndRemoveUntil(
-                        MaterialPageRoute(builder: (_) => const HomeScreen()),
+                        MaterialPageRoute(builder: (_) => const MainNavigationScreen()),
                         (route) => false,
                       );
                     },
