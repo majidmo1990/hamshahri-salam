@@ -18,7 +18,7 @@ class ActionCards extends StatelessWidget {
         Expanded(
           child: _ActionCard(
             icon: Icons.search_rounded,
-            label: 'مشاهده ملک',
+            label: 'خرید ملک',
             filled: true,
             onTap: onViewProperties,
           ),
@@ -27,7 +27,7 @@ class ActionCards extends StatelessWidget {
         Expanded(
           child: _ActionCard(
             icon: Icons.add_circle_outline_rounded,
-            label: 'ثبت ملک',
+            label: 'فروش ملک',
             filled: false,
             onTap: onAddProperty,
           ),

@@ -21,58 +21,35 @@ class CategorySelectionScreen extends StatelessWidget {
   const CategorySelectionScreen({super.key, required this.dealType});
 
   List<PropertyCategory> get _categories {
-    if (dealType == DealType.rent) {
-      return const [
-        PropertyCategory(
-          id: 'rent_shop',
-          label: 'اجاره مغازه',
-          icon: Icons.storefront_outlined,
-        ),
-        PropertyCategory(
-          id: 'rent_unit',
-          label: 'اجاره واحد',
-          icon: Icons.apartment_outlined,
-        ),
-        PropertyCategory(
-          id: 'rent_farmland',
-          label: 'اجاره زمین مزروعی',
-          icon: Icons.grass_outlined,
-        ),
-        PropertyCategory(
-          id: 'rent_villa',
-          label: 'اجاره واحد ویلایی',
-          icon: Icons.villa_outlined,
-        ),
-      ];
-    } else {
-      return const [
-        PropertyCategory(
-          id: 'sell_shop',
-          label: 'مغازه',
-          icon: Icons.storefront_outlined,
-        ),
-        PropertyCategory(
-          id: 'sell_villa',
-          label: 'واحد ویلایی',
-          icon: Icons.villa_outlined,
-        ),
-        PropertyCategory(
-          id: 'sell_apartment',
-          label: 'واحد آپارتمانی',
-          icon: Icons.apartment_outlined,
-        ),
-        PropertyCategory(
-          id: 'sell_farmland',
-          label: 'زمین مزروعی',
-          icon: Icons.grass_outlined,
-        ),
-        PropertyCategory(
-          id: 'sell_land',
-          label: 'زمین',
-          icon: Icons.terrain_outlined,
-        ),
-      ];
-    }
+    // ترتیب یکسان برای اجاره و فروش طبق درخواست:
+    // ویلایی، آپارتمانی، زمین مسکونی، زمین مزروعی، تجاری
+    return const [
+      PropertyCategory(
+        id: 'villa',
+        label: 'ویلایی',
+        icon: Icons.villa_outlined,
+      ),
+      PropertyCategory(
+        id: 'apartment',
+        label: 'آپارتمانی',
+        icon: Icons.apartment_outlined,
+      ),
+      PropertyCategory(
+        id: 'residential_land',
+        label: 'زمین مسکونی',
+        icon: Icons.terrain_outlined,
+      ),
+      PropertyCategory(
+        id: 'farmland',
+        label: 'زمین مزروعی',
+        icon: Icons.grass_outlined,
+      ),
+      PropertyCategory(
+        id: 'commercial',
+        label: 'تجاری',
+        icon: Icons.storefront_outlined,
+      ),
+    ];
   }
 
   @override

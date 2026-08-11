@@ -1,16 +1,6 @@
 import 'package:flutter/material.dart';
 import '../theme/app_theme.dart';
 
-enum PropertyGroup { shop, residential, land }
-
-PropertyGroup groupForCategory(String categoryId) {
-  if (categoryId.contains('shop')) return PropertyGroup.shop;
-  if (categoryId.contains('farmland') || categoryId == 'sell_land') {
-    return PropertyGroup.land;
-  }
-  return PropertyGroup.residential;
-}
-
 class PropertyDetailsStep extends StatefulWidget {
   final String categoryId;
   final Map<String, dynamic> formData;
@@ -32,7 +22,6 @@ class PropertyDetailsStep extends StatefulWidget {
 class _PropertyDetailsStepState extends State<PropertyDetailsStep> {
   @override
   Widget build(BuildContext context) {
-    final group = groupForCategory(widget.categoryId);
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return SingleChildScrollView(
@@ -40,11 +29,10 @@ class _PropertyDetailsStepState extends State<PropertyDetailsStep> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          if (group == PropertyGroup.shop) ..._shopFields(isDark),
-          if (group == PropertyGroup.residential) ..._residentialFields(isDark),
-          if (group == PropertyGroup.land) ..._landFields(isDark),
+          ..._fieldsForCategory(isDark),
           const SizedBox(height: 12),
-          _fieldLabel('توضیحات', isDark, hint: 'هرچیزی که فکر می‌کنید به فروش/اجاره بهتر کمک می‌کند'),
+          _fieldLabel('توضیحات', isDark,
+              hint: 'هرچیزی که فکر می‌کنید به فروش/اجاره بهتر کمک می‌کند'),
           _textArea(isDark),
           const SizedBox(height: 28),
           Row(
@@ -72,17 +60,8 @@ class _PropertyDetailsStepState extends State<PropertyDetailsStep> {
                 child: SizedBox(
                   height: 50,
                   child: ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.primaryBlue,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                    ),
                     onPressed: widget.onNext,
-                    child: const Text(
-                      'بعدی',
-                      style: TextStyle(color: Colors.white),
-                    ),
+                    child: const Text('بعدی'),
                   ),
                 ),
               ),
@@ -94,84 +73,118 @@ class _PropertyDetailsStepState extends State<PropertyDetailsStep> {
     );
   }
 
-  List<Widget> _shopFields(bool isDark) {
-    return [
-      _fieldLabel(
-        'عرض جلوی مغازه (متر)',
-        isDark,
-        hint: 'عرض قسمتی از مغازه که رو به خیابان یا پاساژ است',
-      ),
-      _textField('formData_frontage', 'مثال: ۴', isNumber: true),
-      const SizedBox(height: 16),
-      _fieldLabel('نوع کاربری مغازه', isDark),
-      _pickerField(context, 'formData_shopUsage', 'انتخاب کنید', [
-        'خواربارفروشی',
-        'پوشاک',
-        'مواد غذایی',
-        'خدماتی',
-        'عمومی',
-      ]),
-      const SizedBox(height: 16),
-      _switchTile(
-        'سرقفلی دارد',
-        'دارنده حق تقدم در اجاره‌ی مجدد یا فروش امتیاز مغازه',
-        'formData_hasKeyMoney',
-        isDark,
-      ),
-      _switchTile(
-        'آب، برق و گاز فعال است',
-        null,
-        'formData_utilities',
-        isDark,
-      ),
-    ];
+  List<Widget> _fieldsForCategory(bool isDark) {
+    switch (widget.categoryId) {
+      case 'villa':
+        return _villaFields(isDark);
+      case 'apartment':
+        return _apartmentFields(isDark);
+      case 'residential_land':
+        return _residentialLandFields(isDark);
+      case 'farmland':
+      case 'commercial':
+        return _landLikeFields(isDark);
+      default:
+        return _apartmentFields(isDark);
+    }
   }
 
-  List<Widget> _residentialFields(bool isDark) {
+  List<Widget> _villaFields(bool isDark) {
     return [
-      _fieldLabel('تعداد اتاق خواب', isDark),
-      _pickerField(context, 'formData_bedrooms', 'انتخاب کنید',
+      _fieldLabel('تعداد اتاق‌ها', isDark),
+      _pickerField('formData_bedrooms', 'انتخاب کنید',
           ['۱', '۲', '۳', '۴', '۵ به بالا']),
       const SizedBox(height: 16),
-      _fieldLabel('طبقه واحد', isDark),
-      _textField('formData_floor', 'مثال: ۳', isNumber: true),
+      _infoNote('طبقه', 'این نوع ملک طبقه ندارد (واحد مستقل)', isDark),
       const SizedBox(height: 16),
       _fieldLabel('سن بنا (سال)', isDark, hint: 'اگر نوساز است بنویسید صفر'),
       _textField('formData_buildYear', 'مثال: ۵', isNumber: true),
       const SizedBox(height: 16),
-      _fieldLabel(
-        'نوع سند',
-        isDark,
-        hint: 'تک‌برگ: سند رسمی مستقل / منگوله‌دار: سند قدیمی مشاعی',
-      ),
-      _pickerField(context, 'formData_deed', 'انتخاب کنید',
+      _fieldLabel('نوع سند', isDark),
+      _pickerField('formData_deed', 'انتخاب کنید',
           ['تک‌برگ', 'منگوله‌دار', 'قولنامه‌ای']),
       const SizedBox(height: 16),
-      _switchTile('پارکینگ دارد', null, 'formData_parking', isDark),
-      _switchTile('آسانسور دارد', null, 'formData_elevator', isDark),
-      _switchTile('انباری دارد', null, 'formData_storage', isDark),
+      _fieldLabel('امکانات', isDark),
+      const SizedBox(height: 6),
+      _checkTile('پارکینگ', 'formData_parking', isDark),
+      _checkTile('انباری', 'formData_storage', isDark),
+      _checkTile('آسانسور', 'formData_elevator', isDark),
+      _checkTile('بیمه', 'formData_insurance', isDark),
     ];
   }
 
-  List<Widget> _landFields(bool isDark) {
+  List<Widget> _apartmentFields(bool isDark) {
     return [
-      _fieldLabel(
-        'نوع سند زمین',
-        isDark,
-        hint: 'زراعی: مخصوص کشاورزی / مسکونی و تجاری: قابل ساخت‌وساز',
-      ),
-      _pickerField(context, 'formData_landDeed', 'انتخاب کنید',
-          ['زراعی', 'مسکونی', 'تجاری']),
+      _fieldLabel('تعداد اتاق‌ها', isDark),
+      _pickerField('formData_bedrooms', 'انتخاب کنید',
+          ['۱', '۲', '۳', '۴', '۵ به بالا']),
       const SizedBox(height: 16),
-      _fieldLabel(
-        'کاربری مجاز زمین',
-        isDark,
-        hint: 'زمین برای چه هدفی مجوز استفاده دارد',
-      ),
-      _textField('formData_landUsage', 'مثال: کشاورزی، مسکونی'),
+      _fieldLabel('طبقه', isDark),
+      _textField('formData_floor', 'مثال: ۳', isNumber: true),
       const SizedBox(height: 16),
-      _switchTile('آب و برق در دسترس است', null, 'formData_landUtilities', isDark),
+      _fieldLabel('تعداد واحد در طبقه', isDark),
+      _textField('formData_unitsPerFloor', 'مثال: ۲', isNumber: true),
+      const SizedBox(height: 16),
+      _fieldLabel('سن بنا (سال)', isDark, hint: 'اگر نوساز است بنویسید صفر'),
+      _textField('formData_buildYear', 'مثال: ۵', isNumber: true),
+      const SizedBox(height: 16),
+      _fieldLabel('نوع سند', isDark),
+      _pickerField('formData_deed', 'انتخاب کنید',
+          ['قولنامه‌ای', 'سند تک‌برگ', 'سند رسمی']),
     ];
+  }
+
+  List<Widget> _residentialLandFields(bool isDark) {
+    return [
+      _fieldLabel('نوع سند', isDark),
+      _pickerField('formData_landDeed', 'انتخاب کنید',
+          ['قولنامه‌ای', 'سند تک‌برگ', 'سند رسمی']),
+    ];
+  }
+
+  List<Widget> _landLikeFields(bool isDark) {
+    return [
+      _fieldLabel('نوع سند', isDark),
+      _pickerField('formData_landDeed', 'انتخاب کنید',
+          ['قولنامه‌ای', 'سند تک‌برگ', 'سند رسمی']),
+      const SizedBox(height: 16),
+      _checkTile('آب، برق و گاز در دسترس است', 'formData_utilities', isDark),
+    ];
+  }
+
+  Widget _infoNote(String label, String note, bool isDark) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          label,
+          style: TextStyle(
+            fontSize: 13,
+            fontWeight: FontWeight.w600,
+            color: isDark ? Colors.white70 : Colors.black87,
+          ),
+        ),
+        const SizedBox(height: 6),
+        Container(
+          width: double.infinity,
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+          decoration: BoxDecoration(
+            color: isDark ? AppColors.darkSurface : Colors.white,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(
+              color: isDark ? AppColors.darkBorder : AppColors.skyBlue,
+            ),
+          ),
+          child: Text(
+            note,
+            style: TextStyle(
+              fontSize: 12.5,
+              color: isDark ? Colors.grey[400] : Colors.grey[600],
+            ),
+          ),
+        ),
+      ],
+    );
   }
 
   Widget _fieldLabel(String text, bool isDark, {String? hint}) {
@@ -224,12 +237,7 @@ class _PropertyDetailsStepState extends State<PropertyDetailsStep> {
     );
   }
 
-  Widget _pickerField(
-    BuildContext context,
-    String key,
-    String hint,
-    List<String> options,
-  ) {
+  Widget _pickerField(String key, String hint, List<String> options) {
     return Builder(builder: (context) {
       final isDark = Theme.of(context).brightness == Brightness.dark;
       final selected = widget.formData[key] as String?;
@@ -320,60 +328,46 @@ class _PropertyDetailsStepState extends State<PropertyDetailsStep> {
     );
   }
 
-  Widget _switchTile(
-    String label,
-    String? hint,
-    String key,
-    bool isDark,
-  ) {
+  Widget _checkTile(String label, String key, bool isDark) {
     final currentValue = widget.formData[key] as bool? ?? false;
     return StatefulBuilder(
       builder: (context, setLocalState) {
-        return Container(
-          margin: const EdgeInsets.only(bottom: 10),
-          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-          decoration: BoxDecoration(
-            color: isDark ? AppColors.darkSurface : Colors.white,
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(
-              color: isDark ? AppColors.darkBorder : AppColors.skyBlue,
+        return InkWell(
+          borderRadius: BorderRadius.circular(12),
+          onTap: () {
+            setLocalState(() => widget.formData[key] = !currentValue);
+          },
+          child: Container(
+            margin: const EdgeInsets.only(bottom: 10),
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+            decoration: BoxDecoration(
+              color: isDark ? AppColors.darkSurface : Colors.white,
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(
+                color: isDark ? AppColors.darkBorder : AppColors.skyBlue,
+              ),
             ),
-          ),
-          child: Row(
-            children: [
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      label,
-                      style: TextStyle(
-                        fontSize: 13,
-                        color: isDark ? Colors.white70 : Colors.black87,
-                      ),
-                    ),
-                    if (hint != null)
-                      Padding(
-                        padding: const EdgeInsets.only(top: 2),
-                        child: Text(
-                          hint,
-                          style: TextStyle(
-                            fontSize: 10.5,
-                            color: isDark ? Colors.grey[500] : Colors.grey[500],
-                          ),
-                        ),
-                      ),
-                  ],
+            child: Row(
+              children: [
+                Icon(
+                  currentValue
+                      ? Icons.check_box_rounded
+                      : Icons.check_box_outline_blank_rounded,
+                  color: currentValue
+                      ? AppColors.primaryBlue
+                      : (isDark ? Colors.grey[500] : Colors.grey[400]),
+                  size: 22,
                 ),
-              ),
-              Switch(
-                value: currentValue,
-                activeThumbColor: AppColors.primaryBlue,
-                onChanged: (value) {
-                  setLocalState(() => widget.formData[key] = value);
-                },
-              ),
-            ],
+                const SizedBox(width: 10),
+                Text(
+                  label,
+                  style: TextStyle(
+                    fontSize: 13,
+                    color: isDark ? Colors.white70 : Colors.black87,
+                  ),
+                ),
+              ],
+            ),
           ),
         );
       },

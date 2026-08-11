@@ -36,6 +36,7 @@ class _PropertyFormScreenState extends State<PropertyFormScreen> {
 
   bool get _isVilla => widget.category.id == 'villa';
   bool get _isApartment => widget.category.id == 'apartment';
+  bool get _isLandOnly => !_isVilla && !_isApartment;
 
   @override
   void dispose() {
