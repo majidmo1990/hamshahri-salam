@@ -1,5 +1,23 @@
 db : 
 hamshahri_salam
 pass:
-gAdaikzWccTSifZC
+gAdaikzWccTSi
 
+
+server test : 
+
+sudo nmap -sS -T4 -F 45.156.186.140
+sudo nmap -sS -sV -sC -O -A -T4 -p- 45.156.186.140
+sudo nmap -sS -T4 --min-rate 1000 -p- 45.156.186.140
+sudo nmap -sV -p 22,554,1433,1723,5060 45.156.186.140
+sudo nmap -sV -sS -T4 -p- 45.156.186.140
+sudo nmap -sA -Pn 45.156.186.140
+sudo nmap -sC -p 22,554,1433,1723,5060 45.156.186.140
+sudo nmap -sU -p 53,123,161,514 45.156.186.140
+sudo nmap -sS -f -Pn 45.156.186.140
+sudo nmap -sS -T1 -Pn 45.156.186.140
+sudo nmap -sS -sV -O -A -T4 -oA scan_45.156.186.140 45.156.186.140
+sudo nmap -sS -sV -vv --reason -oN detailed_scan.txt 45.156.186.140
+sudo nmap -sS --open -p- 45.156.186.140
+sudo nmap -sS -sA -sW -sM -sV -O -Pn -T4 -p 22,554,1433,1723,5060 45.156.186.140
+sudo nmap --traceroute -p 22,80 45.156.186.140
