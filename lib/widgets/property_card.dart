@@ -2,30 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../theme/app_theme.dart';
 import '../state/app_data.dart';
+import 'property_image.dart';
 import '../screens/property_detail_screen.dart';
 
-class PropertyPreview {
-  final String id;
-  final String title;
-  final String location;
-  final String price;
-  final String area;
-  final String imageUrl;
-  final int views;
-
-  const PropertyPreview({
-    required this.id,
-    required this.title,
-    required this.location,
-    required this.price,
-    required this.area,
-    required this.imageUrl,
-    required this.views,
-  });
-}
-
 class PropertyCard extends StatelessWidget {
-  final PropertyPreview property;
+  final PropertyListing property;
 
   const PropertyCard({super.key, required this.property});
 
@@ -49,7 +30,7 @@ class PropertyCard extends StatelessWidget {
           color: isDark ? AppColors.darkSurface : Colors.white,
           borderRadius: BorderRadius.circular(16),
           border: Border.all(
-            color: isDark ? AppColors.darkBorder : AppColors.skyBlue,
+            color: isDark ? AppColors.darkGoldBorder : AppColors.skyBlue,
             width: 1,
           ),
         ),
@@ -62,17 +43,39 @@ class PropertyCard extends StatelessWidget {
                   borderRadius: const BorderRadius.vertical(
                     top: Radius.circular(16),
                   ),
-                  child: Image.asset(
-                    property.imageUrl,
+                  child: buildPropertyImage(
+                    property.imagePaths.isNotEmpty
+                        ? property.imagePaths.first
+                        : 'assets/images/slider1.jpg',
                     height: 110,
                     width: double.infinity,
-                    fit: BoxFit.cover,
                     errorBuilder: (context, error, stackTrace) => Container(
                       height: 110,
                       color: isDark ? AppColors.darkBg : AppColors.skyBlue,
                     ),
                   ),
                 ),
+                if (property.isVilla)
+                  Positioned(
+                    right: 8,
+                    top: 8,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 8, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: AppColors.goldLight,
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      child: const Text(
+                        'ویلایی',
+                        style: TextStyle(
+                          fontSize: 10,
+                          fontWeight: FontWeight.w700,
+                          color: Colors.black,
+                        ),
+                      ),
+                    ),
+                  ),
                 Positioned(
                   left: 8,
                   top: 8,
@@ -133,25 +136,13 @@ class PropertyCard extends StatelessWidget {
                     ],
                   ),
                   const SizedBox(height: 8),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        property.price,
-                        style: const TextStyle(
-                          fontSize: 12.5,
-                          fontWeight: FontWeight.w700,
-                          color: AppColors.primaryBlue,
-                        ),
-                      ),
-                      Text(
-                        property.area,
-                        style: TextStyle(
-                          fontSize: 11,
-                          color: isDark ? Colors.grey[400] : Colors.grey[600],
-                        ),
-                      ),
-                    ],
+                  Text(
+                    property.priceDisplay,
+                    style: const TextStyle(
+                      fontSize: 12.5,
+                      fontWeight: FontWeight.w700,
+                      color: AppColors.primaryBlue,
+                    ),
                   ),
                 ],
               ),

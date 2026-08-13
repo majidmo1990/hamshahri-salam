@@ -5,7 +5,7 @@ import '../theme/app_theme.dart';
 
 class MediaUploadStep extends StatefulWidget {
   final VoidCallback onBack;
-  final VoidCallback onSubmit;
+  final void Function(List<String> images, String? video) onSubmit;
 
   const MediaUploadStep({
     super.key,
@@ -153,7 +153,7 @@ class _MediaUploadStepState extends State<MediaUploadStep> {
                     onPressed: _canSubmit && !_isSubmitting
                         ? () {
                             setState(() => _isSubmitting = true);
-                            widget.onSubmit();
+                            widget.onSubmit(_images.map((f) => f.path).toList(), _video?.path);
                           }
                         : null,
                     child: _isSubmitting

@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
 import '../theme/app_theme.dart';
 import '../widgets/bottom_nav.dart';
-import '../widgets/property_card.dart';
 import 'home_content_screen.dart';
 import 'favorites_screen.dart';
 import 'reservations_screen.dart';
 import 'profile_screen.dart';
+import 'search_screen.dart';
+import 'property_type_screen.dart';
 
 class MainNavigationScreen extends StatefulWidget {
   const MainNavigationScreen({super.key});
@@ -17,52 +18,14 @@ class MainNavigationScreen extends StatefulWidget {
 class _MainNavigationScreenState extends State<MainNavigationScreen> {
   int _navIndex = 0;
 
-  final List<PropertyPreview> _allProperties = const [
-    PropertyPreview(
-      id: 'prop1',
-      title: 'آپارتمان ۱۲۰ متری',
-      location: 'سعادت‌آباد',
-      price: '۳ میلیارد تومان',
-      area: '۱۲۰ متر',
-      imageUrl: 'assets/images/slider1.jpg',
-      views: 340,
-    ),
-    PropertyPreview(
-      id: 'prop2',
-      title: 'مغازه تجاری',
-      location: 'خیابان ولیعصر',
-      price: 'رهن ۲۰۰ / اجاره ۱۵',
-      area: '۴۵ متر',
-      imageUrl: 'assets/images/slider2.jpg',
-      views: 210,
-    ),
-    PropertyPreview(
-      id: 'prop3',
-      title: 'زمین مزروعی',
-      location: 'کرج، اطراف',
-      price: '۸۰۰ میلیون تومان',
-      area: '۱۰۰۰ متر',
-      imageUrl: 'assets/images/slider3.jpg',
-      views: 150,
-    ),
-    PropertyPreview(
-      id: 'prop4',
-      title: 'واحد ویلایی نوساز',
-      location: 'لواسان',
-      price: 'رهن ۵۰۰ / اجاره ۴۰',
-      area: '۲۰۰ متر',
-      imageUrl: 'assets/images/slider1.jpg',
-      views: 95,
-    ),
-  ];
-
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     final screens = [
-      HomeContentScreen(allProperties: _allProperties),
-      FavoritesScreen(allProperties: _allProperties),
+      const HomeContentScreen(),
+      const SearchScreen(),
+      const FavoritesScreen(),
       const ReservationsScreen(),
       const ProfileScreen(),
     ];
@@ -77,6 +40,29 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
             children: screens,
           ),
         ),
+        floatingActionButton: Container(
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            boxShadow: [
+              BoxShadow(
+                color: AppColors.goldHighlight.withValues(alpha: 0.5),
+                blurRadius: 14,
+                spreadRadius: 1,
+              ),
+            ],
+          ),
+          child: FloatingActionButton(
+            backgroundColor: AppColors.goldLight,
+            elevation: 0,
+            onPressed: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(builder: (_) => const PropertyTypeScreen()),
+              );
+            },
+            child: const Icon(Icons.add_rounded, color: Colors.black, size: 30),
+          ),
+        ),
+        floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
         bottomNavigationBar: BottomNav(
           currentIndex: _navIndex,
           onTap: (index) => setState(() => _navIndex = index),

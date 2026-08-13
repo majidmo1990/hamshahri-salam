@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../theme/app_theme.dart';
+import '../state/app_data.dart';
 import '../widgets/home_slider.dart';
 import '../widgets/action_cards.dart';
 import '../widgets/property_card.dart';
@@ -7,14 +9,13 @@ import 'property_type_screen.dart';
 import 'property_list_screen.dart';
 
 class HomeContentScreen extends StatelessWidget {
-  final List<PropertyPreview> allProperties;
-
-  const HomeContentScreen({super.key, required this.allProperties});
+  const HomeContentScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final popular = allProperties.take(3).toList();
+    final listings = context.watch<AppData>().listings;
+    final popular = listings.take(3).toList();
 
     return SingleChildScrollView(
       padding: const EdgeInsets.fromLTRB(16, 12, 16, 20),
@@ -28,16 +29,12 @@ class HomeContentScreen extends StatelessWidget {
           ActionCards(
             onViewProperties: () {
               Navigator.of(context).push(
-                MaterialPageRoute(
-                  builder: (_) => const PropertyListScreen(),
-                ),
+                MaterialPageRoute(builder: (_) => const PropertyListScreen()),
               );
             },
             onAddProperty: () {
               Navigator.of(context).push(
-                MaterialPageRoute(
-                  builder: (_) => const PropertyTypeScreen(),
-                ),
+                MaterialPageRoute(builder: (_) => const PropertyTypeScreen()),
               );
             },
           ),
@@ -56,9 +53,7 @@ class HomeContentScreen extends StatelessWidget {
               GestureDetector(
                 onTap: () {
                   Navigator.of(context).push(
-                    MaterialPageRoute(
-                      builder: (_) => const PropertyListScreen(),
-                    ),
+                    MaterialPageRoute(builder: (_) => const PropertyListScreen()),
                   );
                 },
                 child: const Text(
@@ -73,17 +68,30 @@ class HomeContentScreen extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 12),
-          SizedBox(
-            height: 210,
-            child: ListView.separated(
-              scrollDirection: Axis.horizontal,
-              itemCount: popular.length,
-              separatorBuilder: (_, __) => const SizedBox(width: 12),
-              itemBuilder: (context, index) {
-                return PropertyCard(property: popular[index]);
-              },
-            ),
-          ),
+          popular.isEmpty
+              ? SizedBox(
+                  height: 100,
+                  child: Center(
+                    child: Text(
+                      'هنوز ملکی ثبت نشده است',
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: isDark ? Colors.grey[500] : Colors.grey[500],
+                      ),
+                    ),
+                  ),
+                )
+              : SizedBox(
+                  height: 210,
+                  child: ListView.separated(
+                    scrollDirection: Axis.horizontal,
+                    itemCount: popular.length,
+                    separatorBuilder: (_, __) => const SizedBox(width: 12),
+                    itemBuilder: (context, index) {
+                      return PropertyCard(property: popular[index]);
+                    },
+                  ),
+                ),
         ],
       ),
     );
@@ -102,11 +110,8 @@ class HomeContentScreen extends StatelessWidget {
             ),
             child: Row(
               children: [
-                Icon(
-                  Icons.search_rounded,
-                  size: 20,
-                  color: isDark ? Colors.grey[400] : Colors.grey[600],
-                ),
+                Icon(Icons.search_rounded,
+                    size: 20, color: isDark ? Colors.grey[400] : Colors.grey[600]),
                 const SizedBox(width: 8),
                 Text(
                   'جستجو در املاک...',

@@ -37,7 +37,7 @@ class ReservationsScreen extends StatelessWidget {
                         ClipRRect(
                           borderRadius: BorderRadius.circular(10),
                           child: Image.asset(
-                            reservation.property.imageUrl,
+                            reservation.property.imagePaths.isNotEmpty ? reservation.property.imagePaths.first : 'assets/images/slider1.jpg',
                             width: 60,
                             height: 60,
                             fit: BoxFit.cover,

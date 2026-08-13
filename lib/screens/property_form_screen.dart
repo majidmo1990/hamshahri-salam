@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../theme/app_theme.dart';
+import '../state/app_data.dart';
 import '../widgets/property_details_step.dart';
 import '../widgets/media_upload_step.dart';
 import 'property_type_screen.dart';
@@ -59,8 +61,45 @@ class _PropertyFormScreenState extends State<PropertyFormScreen> {
     );
   }
 
-  Future<void> _submitProperty() async {
+  String _buildPriceDisplay() {
+    if (widget.dealType == DealType.rent) {
+      final deposit = _depositController.text.trim();
+      final rent = _rentController.text.trim();
+      return 'رهن ${deposit.isEmpty ? '۰' : deposit} / اجاره ${rent.isEmpty ? '۰' : rent}';
+    }
+    final price = _priceController.text.trim();
+    return price.isEmpty ? 'توافقی' : '$price تومان';
+  }
+
+  Future<void> _submitProperty(List<String> images, String? video) async {
     await Future.delayed(const Duration(milliseconds: 900));
+    if (!mounted) return;
+
+    final listing = PropertyListing(
+      id: DateTime.now().millisecondsSinceEpoch.toString(),
+      dealType: widget.dealType == DealType.rent ? 'rent' : 'sell',
+      categoryId: widget.category.id,
+      categoryLabel: widget.category.label,
+      title: _titleController.text.trim().isEmpty
+          ? widget.category.label
+          : _titleController.text.trim(),
+      location: _locationController.text.trim(),
+      landArea: _landAreaController.text.trim().isEmpty
+          ? null
+          : _landAreaController.text.trim(),
+      buildArea: _buildAreaController.text.trim().isEmpty
+          ? null
+          : _buildAreaController.text.trim(),
+      priceDisplay: _buildPriceDisplay(),
+      details: Map<String, dynamic>.from(formData),
+      description: formData['formData_description'] as String? ?? '',
+      imagePaths: images,
+      videoPath: video,
+      views: 0,
+      createdAt: DateTime.now(),
+    );
+
+    Provider.of<AppData>(context, listen: false).addListing(listing);
 
     if (!mounted) return;
 

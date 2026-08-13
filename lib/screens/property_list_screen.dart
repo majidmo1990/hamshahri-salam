@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../theme/app_theme.dart';
+import '../state/app_data.dart';
 import '../widgets/property_card.dart';
 
 class PropertyListScreen extends StatefulWidget {
@@ -10,80 +12,53 @@ class PropertyListScreen extends StatefulWidget {
 }
 
 class _PropertyListScreenState extends State<PropertyListScreen> {
-  String _filter = 'all'; // all, rent, sell
-
-  final List<PropertyPreview> _allProperties = const [
-    PropertyPreview(
-      id: 'prop1',
-      title: 'آپارتمان ۱۲۰ متری',
-      location: 'سعادت‌آباد',
-      price: '۳ میلیارد تومان',
-      area: '۱۲۰ متر',
-      imageUrl: 'assets/images/slider1.jpg',
-      views: 340,
-    ),
-    PropertyPreview(
-      id: 'prop2',
-      title: 'مغازه تجاری',
-      location: 'خیابان ولیعصر',
-      price: 'رهن ۲۰۰ / اجاره ۱۵',
-      area: '۴۵ متر',
-      imageUrl: 'assets/images/slider2.jpg',
-      views: 210,
-    ),
-    PropertyPreview(
-      id: 'prop3',
-      title: 'زمین مزروعی',
-      location: 'کرج، اطراف',
-      price: '۸۰۰ میلیون تومان',
-      area: '۱۰۰۰ متر',
-      imageUrl: 'assets/images/slider3.jpg',
-      views: 150,
-    ),
-    PropertyPreview(
-      id: 'prop4',
-      title: 'واحد ویلایی نوساز',
-      location: 'لواسان',
-      price: 'رهن ۵۰۰ / اجاره ۴۰',
-      area: '۲۰۰ متر',
-      imageUrl: 'assets/images/slider1.jpg',
-      views: 95,
-    ),
-  ];
+  String _filter = 'all';
 
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final all = context.watch<AppData>().listings;
 
-    return Directionality(
-      textDirection: TextDirection.rtl,
-      child: Scaffold(
-        backgroundColor: isDark ? AppColors.darkBg : AppColors.lightBg,
-        appBar: AppBar(title: const Text('مشاهده ملک‌ها')),
-        body: SafeArea(
-          child: Column(
-            children: [
-              const SizedBox(height: 12),
-              _buildFilterChips(isDark),
-              const SizedBox(height: 12),
-              Expanded(
-                child: GridView.builder(
-                  padding: const EdgeInsets.all(16),
-                  gridDelegate:
-                      const SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: 2,
-                    mainAxisSpacing: 14,
-                    crossAxisSpacing: 14,
-                    childAspectRatio: 0.72,
-                  ),
-                  itemCount: _allProperties.length,
-                  itemBuilder: (context, index) {
-                    return PropertyCard(property: _allProperties[index]);
-                  },
-                ),
-              ),
-            ],
-          ),
+    final filtered = _filter == 'all'
+        ? all
+        : all.where((p) => p.dealType == _filter).toList();
+
+    return Scaffold(
+      backgroundColor: isDark ? AppColors.darkBg : AppColors.lightBg,
+      appBar: AppBar(title: const Text('خرید ملک')),
+      body: SafeArea(
+        child: Column(
+          children: [
+            const SizedBox(height: 12),
+            _buildFilterChips(isDark),
+            const SizedBox(height: 12),
+            Expanded(
+              child: filtered.isEmpty
+                  ? Center(
+                      child: Text(
+                        'ملکی یافت نشد',
+                        style: TextStyle(
+                          fontSize: 13,
+                          color: isDark ? Colors.grey[500] : Colors.grey[500],
+                        ),
+                      ),
+                    )
+                  : GridView.builder(
+                      padding: const EdgeInsets.all(16),
+                      gridDelegate:
+                          const SliverGridDelegateWithFixedCrossAxisCount(
+                        crossAxisCount: 2,
+                        mainAxisSpacing: 14,
+                        crossAxisSpacing: 14,
+                        childAspectRatio: 0.72,
+                      ),
+                      itemCount: filtered.length,
+                      itemBuilder: (context, index) {
+                        return PropertyCard(property: filtered[index]);
+                      },
+                    ),
+            ),
+          ],
         ),
       ),
     );
@@ -109,7 +84,7 @@ class _PropertyListScreenState extends State<PropertyListScreen> {
               labelStyle: TextStyle(
                 fontSize: 12.5,
                 color: isSelected
-                    ? Colors.white
+                    ? Colors.black
                     : (isDark ? Colors.white70 : Colors.black87),
               ),
               shape: RoundedRectangleBorder(

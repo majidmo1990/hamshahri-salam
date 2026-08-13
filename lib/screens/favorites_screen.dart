@@ -5,18 +5,14 @@ import '../state/app_data.dart';
 import '../widgets/property_card.dart';
 
 class FavoritesScreen extends StatelessWidget {
-  final List<PropertyPreview> allProperties;
-
-  const FavoritesScreen({super.key, required this.allProperties});
+  const FavoritesScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final appData = context.watch<AppData>();
-
-    final favorites = allProperties
-        .where((p) => appData.isFavorite(p.id))
-        .toList();
+    final favorites =
+        appData.listings.where((p) => appData.isFavorite(p.id)).toList();
 
     return Scaffold(
       backgroundColor: isDark ? AppColors.darkBg : AppColors.lightBg,

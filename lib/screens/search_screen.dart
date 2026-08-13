@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../theme/app_theme.dart';
+import '../state/app_data.dart';
 import '../widgets/property_card.dart';
 
 class SearchScreen extends StatefulWidget {
-  final List<PropertyPreview> allProperties;
-
-  const SearchScreen({super.key, required this.allProperties});
+  const SearchScreen({super.key});
 
   @override
   State<SearchScreen> createState() => _SearchScreenState();
@@ -17,8 +17,9 @@ class _SearchScreenState extends State<SearchScreen> {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final all = context.watch<AppData>().listings;
 
-    final results = widget.allProperties.where((p) {
+    final results = all.where((p) {
       final q = _query.trim();
       if (q.isEmpty) return true;
       return p.title.contains(q) || p.location.contains(q);
