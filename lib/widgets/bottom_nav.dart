@@ -11,47 +11,57 @@ class BottomNav extends StatelessWidget {
     required this.onTap,
   });
 
-  static const List<_NavItem> _leftItems = [
-    _NavItem(icon: Icons.home_outlined, label: 'خانه', index: 0),
-    _NavItem(icon: Icons.search_rounded, label: 'جستجو', index: 1),
-  ];
-
-  static const List<_NavItem> _rightItems = [
-    _NavItem(icon: Icons.favorite_border_rounded, label: 'علاقه‌مندی', index: 2),
-    _NavItem(icon: Icons.calendar_today_rounded, label: 'رزروها', index: 3),
+  static const List<_NavItem> _items = [
+    _NavItem(icon: Icons.home_outlined, label: 'خانه'),
+    _NavItem(icon: Icons.favorite_border_rounded, label: 'علاقه‌مندی'),
+    _NavItem(icon: Icons.calendar_today_rounded, label: 'رزروها'),
+    _NavItem(icon: Icons.person_outline_rounded, label: 'پروفایل'),
   ];
 
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
-    return BottomAppBar(
-      color: isDark ? const Color(0xFF0A0A0A) : const Color(0xFFF7F7F7),
-      shape: const CircularNotchedRectangle(),
-      notchMargin: 8,
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceAround,
-        children: [
-          ..._leftItems.map((item) => _buildItem(item, isDark)),
-          const SizedBox(width: 40),
-          ..._rightItems.map((item) => _buildItem(item, isDark)),
-          _buildProfileItem(isDark),
-        ],
+    return Container(
+      decoration: BoxDecoration(
+        color: isDark ? const Color(0xFF0A0A0A) : const Color(0xFFF9F5EB),
+        border: Border(
+          top: BorderSide(
+            color: isDark ? AppColors.darkGoldBorder : AppColors.lightBorder,
+            width: 1,
+          ),
+        ),
+      ),
+      child: BottomAppBar(
+        color: Colors.transparent,
+        elevation: 0,
+        shape: const CircularNotchedRectangle(),
+        notchMargin: 10,
+        padding: EdgeInsets.zero,
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceAround,
+          children: [
+            _buildItem(0, _items[0], isDark),
+            _buildItem(1, _items[1], isDark),
+            const SizedBox(width: 56),
+            _buildItem(2, _items[2], isDark),
+            _buildItem(3, _items[3], isDark),
+          ],
+        ),
       ),
     );
   }
 
-  Widget _buildItem(_NavItem item, bool isDark) {
-    final selected = item.index == currentIndex;
-    final color = selected
-        ? AppColors.primaryBlue
-        : (isDark ? Colors.grey[500] : Colors.grey[600]);
+  Widget _buildItem(int index, _NavItem item, bool isDark) {
+    final selected = index == currentIndex;
+    final color =
+        selected ? AppColors.goldLight : (isDark ? Colors.grey[500] : Colors.grey[600]);
 
     return InkWell(
-      onTap: () => onTap(item.index),
+      onTap: () => onTap(index),
       borderRadius: BorderRadius.circular(10),
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -63,35 +73,10 @@ class BottomNav extends StatelessWidget {
       ),
     );
   }
-
-  Widget _buildProfileItem(bool isDark) {
-    const index = 4;
-    final selected = index == currentIndex;
-    final color = selected
-        ? AppColors.primaryBlue
-        : (isDark ? Colors.grey[500] : Colors.grey[600]);
-
-    return InkWell(
-      onTap: () => onTap(index),
-      borderRadius: BorderRadius.circular(10),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(Icons.person_outline_rounded, size: 22, color: color),
-            const SizedBox(height: 3),
-            Text('پروفایل', style: TextStyle(fontSize: 10, color: color)),
-          ],
-        ),
-      ),
-    );
-  }
 }
 
 class _NavItem {
   final IconData icon;
   final String label;
-  final int index;
-  const _NavItem({required this.icon, required this.label, required this.index});
+  const _NavItem({required this.icon, required this.label});
 }

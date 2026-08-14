@@ -5,7 +5,6 @@ import 'home_content_screen.dart';
 import 'favorites_screen.dart';
 import 'reservations_screen.dart';
 import 'profile_screen.dart';
-import 'search_screen.dart';
 import 'property_type_screen.dart';
 
 class MainNavigationScreen extends StatefulWidget {
@@ -24,7 +23,6 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
 
     final screens = [
       const HomeContentScreen(),
-      const SearchScreen(),
       const FavoritesScreen(),
       const ReservationsScreen(),
       const ProfileScreen(),
@@ -40,29 +38,54 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
             children: screens,
           ),
         ),
-        floatingActionButton: Container(
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            boxShadow: [
-              BoxShadow(
-                color: AppColors.goldHighlight.withValues(alpha: 0.5),
-                blurRadius: 14,
-                spreadRadius: 1,
+        extendBody: true,
+        floatingActionButton: Padding(
+          padding: const EdgeInsets.only(top: 26),
+          child: Container(
+            width: 62,
+            height: 62,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              gradient: const LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [AppColors.goldHighlight, AppColors.goldLight],
               ),
-            ],
-          ),
-          child: FloatingActionButton(
-            backgroundColor: AppColors.goldLight,
-            elevation: 0,
-            onPressed: () {
-              Navigator.of(context).push(
-                MaterialPageRoute(builder: (_) => const PropertyTypeScreen()),
-              );
-            },
-            child: const Icon(Icons.add_rounded, color: Colors.black, size: 30),
+              boxShadow: [
+                BoxShadow(
+                  color: AppColors.goldHighlight.withValues(alpha: 0.55),
+                  blurRadius: 16,
+                  spreadRadius: 1,
+                ),
+              ],
+              border: Border.all(
+                color: isDark ? AppColors.darkBg : Colors.white,
+                width: 3,
+              ),
+            ),
+            child: Material(
+              color: Colors.transparent,
+              shape: const CircleBorder(),
+              child: InkWell(
+                customBorder: const CircleBorder(),
+                onTap: () {
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (_) => const PropertyTypeScreen(),
+                    ),
+                  );
+                },
+                child: const Icon(
+                  Icons.add_rounded,
+                  color: Colors.black,
+                  size: 32,
+                ),
+              ),
+            ),
           ),
         ),
-        floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
+        floatingActionButtonLocation:
+            FloatingActionButtonLocation.centerDocked,
         bottomNavigationBar: BottomNav(
           currentIndex: _navIndex,
           onTap: (index) => setState(() => _navIndex = index),
