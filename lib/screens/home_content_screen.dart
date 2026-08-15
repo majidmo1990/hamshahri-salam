@@ -7,6 +7,8 @@ import '../widgets/action_cards.dart';
 import '../widgets/property_card.dart';
 import 'property_type_screen.dart';
 import 'property_list_screen.dart';
+import 'search_screen.dart';
+import 'notifications_screen.dart';
 
 class HomeContentScreen extends StatelessWidget {
   const HomeContentScreen({super.key});
@@ -101,40 +103,54 @@ class HomeContentScreen extends StatelessWidget {
     return Row(
       children: [
         Expanded(
-          child: Container(
-            height: 44,
-            padding: const EdgeInsets.symmetric(horizontal: 14),
-            decoration: BoxDecoration(
-              color: isDark ? AppColors.darkSurface : AppColors.skyBlue,
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Row(
-              children: [
-                Icon(Icons.search_rounded,
-                    size: 20, color: isDark ? Colors.grey[400] : Colors.grey[600]),
-                const SizedBox(width: 8),
-                Text(
-                  'جستجو در املاک...',
-                  style: TextStyle(
-                    fontSize: 13,
-                    color: isDark ? Colors.grey[400] : Colors.grey[600],
+          child: GestureDetector(
+            onTap: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(builder: (_) => const SearchScreen()),
+              );
+            },
+            child: Container(
+              height: 44,
+              padding: const EdgeInsets.symmetric(horizontal: 14),
+              decoration: BoxDecoration(
+                color: isDark ? AppColors.darkSurface : AppColors.skyBlue,
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Row(
+                children: [
+                  Icon(Icons.search_rounded,
+                      size: 20, color: isDark ? Colors.grey[400] : Colors.grey[600]),
+                  const SizedBox(width: 8),
+                  Text(
+                    'جستجو در املاک...',
+                    style: TextStyle(
+                      fontSize: 13,
+                      color: isDark ? Colors.grey[400] : Colors.grey[600],
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
         ),
         const SizedBox(width: 10),
-        Container(
-          width: 44,
-          height: 44,
-          decoration: BoxDecoration(
-            color: isDark ? AppColors.darkSurface : AppColors.skyBlue,
-            borderRadius: BorderRadius.circular(12),
-          ),
-          child: Icon(
-            Icons.notifications_none_rounded,
-            color: isDark ? Colors.grey[300] : AppColors.primaryBlue,
+        GestureDetector(
+          onTap: () {
+            Navigator.of(context).push(
+              MaterialPageRoute(builder: (_) => const NotificationsScreen()),
+            );
+          },
+          child: Container(
+            width: 44,
+            height: 44,
+            decoration: BoxDecoration(
+              color: isDark ? AppColors.darkSurface : AppColors.skyBlue,
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Icon(
+              Icons.notifications_none_rounded,
+              color: isDark ? Colors.grey[300] : AppColors.primaryBlue,
+            ),
           ),
         ),
       ],

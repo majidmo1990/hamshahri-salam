@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../theme/app_theme.dart';
 import '../theme/theme_provider.dart';
+import 'notifications_screen.dart';
+import 'support_screen.dart';
+import 'about_screen.dart';
 
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
@@ -24,13 +27,13 @@ class ProfileScreen extends StatelessWidget {
                     width: 84,
                     height: 84,
                     decoration: BoxDecoration(
-                      color: AppColors.primaryBlue.withValues(alpha: 0.12),
+                      color: AppColors.goldLight.withValues(alpha: 0.15),
                       shape: BoxShape.circle,
                     ),
                     child: const Icon(
                       Icons.person_rounded,
                       size: 42,
-                      color: AppColors.primaryBlue,
+                      color: AppColors.goldLight,
                     ),
                   ),
                   const SizedBox(height: 12),
@@ -60,7 +63,7 @@ class ProfileScreen extends StatelessWidget {
               isDark: isDark,
               trailing: Switch(
                 value: isDark,
-                activeThumbColor: AppColors.primaryBlue,
+                activeThumbColor: AppColors.goldLight,
                 onChanged: (_) => themeProvider.toggleTheme(),
               ),
             ),
@@ -68,19 +71,31 @@ class ProfileScreen extends StatelessWidget {
               icon: Icons.notifications_none_rounded,
               label: 'اعلان‌ها',
               isDark: isDark,
-              onTap: () {},
+              onTap: () {
+                Navigator.of(context).push(
+                  MaterialPageRoute(builder: (_) => const NotificationsScreen()),
+                );
+              },
             ),
             _menuTile(
               icon: Icons.support_agent_rounded,
               label: 'پشتیبانی',
               isDark: isDark,
-              onTap: () {},
+              onTap: () {
+                Navigator.of(context).push(
+                  MaterialPageRoute(builder: (_) => const SupportScreen()),
+                );
+              },
             ),
             _menuTile(
               icon: Icons.info_outline_rounded,
               label: 'درباره ما',
               isDark: isDark,
-              onTap: () {},
+              onTap: () {
+                Navigator.of(context).push(
+                  MaterialPageRoute(builder: (_) => const AboutScreen()),
+                );
+              },
             ),
           ],
         ),
@@ -101,12 +116,12 @@ class ProfileScreen extends StatelessWidget {
         color: isDark ? AppColors.darkSurface : Colors.white,
         borderRadius: BorderRadius.circular(14),
         border: Border.all(
-          color: isDark ? AppColors.darkBorder : AppColors.skyBlue,
+          color: isDark ? AppColors.darkGoldBorder : AppColors.skyBlue,
         ),
       ),
       child: ListTile(
         onTap: onTap,
-        leading: Icon(icon, color: AppColors.primaryBlue),
+        leading: Icon(icon, color: AppColors.goldLight),
         title: Text(
           label,
           style: TextStyle(

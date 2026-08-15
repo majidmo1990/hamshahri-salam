@@ -102,7 +102,7 @@ class _PropertyDetailsStepState extends State<PropertyDetailsStep> {
       const SizedBox(height: 16),
       _fieldLabel('نوع سند', isDark),
       _pickerField('formData_deed', 'انتخاب کنید',
-          ['تک‌برگ', 'منگوله‌دار', 'قولنامه‌ای']),
+          ['سند تک‌برگ', 'قولنامه‌ای']),
       const SizedBox(height: 16),
       _fieldLabel('امکانات', isDark),
       const SizedBox(height: 6),
@@ -130,7 +130,7 @@ class _PropertyDetailsStepState extends State<PropertyDetailsStep> {
       const SizedBox(height: 16),
       _fieldLabel('نوع سند', isDark),
       _pickerField('formData_deed', 'انتخاب کنید',
-          ['قولنامه‌ای', 'سند تک‌برگ', 'سند رسمی']),
+          ['سند تک‌برگ', 'قولنامه‌ای']),
     ];
   }
 
@@ -138,7 +138,7 @@ class _PropertyDetailsStepState extends State<PropertyDetailsStep> {
     return [
       _fieldLabel('نوع سند', isDark),
       _pickerField('formData_landDeed', 'انتخاب کنید',
-          ['قولنامه‌ای', 'سند تک‌برگ', 'سند رسمی']),
+          ['سند تک‌برگ', 'قولنامه‌ای']),
     ];
   }
 
@@ -146,7 +146,7 @@ class _PropertyDetailsStepState extends State<PropertyDetailsStep> {
     return [
       _fieldLabel('نوع سند', isDark),
       _pickerField('formData_landDeed', 'انتخاب کنید',
-          ['قولنامه‌ای', 'سند تک‌برگ', 'سند رسمی']),
+          ['سند تک‌برگ', 'قولنامه‌ای']),
       const SizedBox(height: 16),
       _checkTile('آب، برق و گاز در دسترس است', 'formData_utilities', isDark),
     ];
@@ -329,13 +329,15 @@ class _PropertyDetailsStepState extends State<PropertyDetailsStep> {
   }
 
   Widget _checkTile(String label, String key, bool isDark) {
-    final currentValue = widget.formData[key] as bool? ?? false;
     return StatefulBuilder(
       builder: (context, setLocalState) {
+        final currentValue = widget.formData[key] as bool? ?? false;
         return InkWell(
           borderRadius: BorderRadius.circular(12),
           onTap: () {
-            setLocalState(() => widget.formData[key] = !currentValue);
+            setLocalState(() {
+              widget.formData[key] = !currentValue;
+            });
           },
           child: Container(
             margin: const EdgeInsets.only(bottom: 10),
