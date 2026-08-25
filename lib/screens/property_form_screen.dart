@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../theme/app_theme.dart';
 import '../state/app_data.dart';
+import '../state/districts.dart';
 import '../widgets/property_details_step.dart';
 import '../widgets/media_upload_step.dart';
 import 'property_type_screen.dart';
@@ -36,6 +37,8 @@ class _PropertyFormScreenState extends State<PropertyFormScreen> {
   final _depositController = TextEditingController();
   final _rentController = TextEditingController();
 
+  String? _selectedDistrict;
+
   bool get _isVilla => widget.category.id == 'villa';
   bool get _isApartment => widget.category.id == 'apartment';
 
@@ -61,6 +64,11 @@ class _PropertyFormScreenState extends State<PropertyFormScreen> {
     );
   }
 
+  int _parseNumber(String text) {
+    final digits = text.replaceAll(RegExp(r'[^0-9]'), '');
+    return digits.isEmpty ? 0 : int.parse(digits);
+  }
+
   String _buildPriceDisplay() {
     if (widget.dealType == DealType.rent) {
       final deposit = _depositController.text.trim();
@@ -69,6 +77,13 @@ class _PropertyFormScreenState extends State<PropertyFormScreen> {
     }
     final price = _priceController.text.trim();
     return price.isEmpty ? 'توافقی' : '$price تومان';
+  }
+
+  int _buildPriceValue() {
+    if (widget.dealType == DealType.rent) {
+      return _parseNumber(_rentController.text);
+    }
+    return _parseNumber(_priceController.text);
   }
 
   Future<void> _submitProperty(List<String> images, String? video) async {
@@ -84,6 +99,7 @@ class _PropertyFormScreenState extends State<PropertyFormScreen> {
           ? widget.category.label
           : _titleController.text.trim(),
       location: _locationController.text.trim(),
+      district: _selectedDistrict ?? kDistricts.first,
       landArea: _landAreaController.text.trim().isEmpty
           ? null
           : _landAreaController.text.trim(),
@@ -91,6 +107,7 @@ class _PropertyFormScreenState extends State<PropertyFormScreen> {
           ? null
           : _buildAreaController.text.trim(),
       priceDisplay: _buildPriceDisplay(),
+      priceValue: _buildPriceValue(),
       details: Map<String, dynamic>.from(formData),
       description: formData['formData_description'] as String? ?? '',
       imagePaths: images,
@@ -288,8 +305,11 @@ class _PropertyFormScreenState extends State<PropertyFormScreen> {
             'مثال: واحد ۱۳۰ متری در سعادت‌آباد',
           ),
           const SizedBox(height: 16),
-          _fieldLabel('موقعیت', isDark),
-          _textField(_locationController, 'شهر، محله، خیابان...'),
+          _fieldLabel('محدوده', isDark),
+          _districtPicker(isDark),
+          const SizedBox(height: 16),
+          _fieldLabel('موقعیت (آدرس دقیق)', isDark),
+          _textField(_locationController, 'کوچه، پلاک...'),
           const SizedBox(height: 16),
           if (_isVilla) ...[
             _fieldLabel('متراژ زمین (متر مربع)', isDark),
@@ -326,6 +346,87 @@ class _PropertyFormScreenState extends State<PropertyFormScreen> {
           const SizedBox(height: 24),
         ],
       ),
+    );
+  }
+
+  Widget _districtPicker(bool isDark) {
+    return InkWell(
+      borderRadius: BorderRadius.circular(12),
+      onTap: () => _openDistrictSheet(isDark),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+        decoration: BoxDecoration(
+          color: isDark ? AppColors.darkSurface : Colors.white,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(
+            color: isDark ? AppColors.darkBorder : AppColors.skyBlue,
+          ),
+        ),
+        child: Row(
+          children: [
+            Expanded(
+              child: Text(
+                _selectedDistrict ?? 'انتخاب محدوده',
+                style: TextStyle(
+                  fontSize: 13,
+                  color: _selectedDistrict != null
+                      ? (isDark ? Colors.white : Colors.black87)
+                      : (isDark ? Colors.grey[500] : Colors.grey[400]),
+                ),
+              ),
+            ),
+            Icon(
+              Icons.keyboard_arrow_down_rounded,
+              color: isDark ? Colors.grey[400] : Colors.grey[500],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _openDistrictSheet(bool isDark) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: isDark ? AppColors.darkSurface : Colors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) {
+        return SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 10),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: kDistricts.map((district) {
+                final isSelected = _selectedDistrict == district;
+                return ListTile(
+                  onTap: () {
+                    setState(() => _selectedDistrict = district);
+                    Navigator.pop(context);
+                  },
+                  title: Text(
+                    district,
+                    textAlign: TextAlign.right,
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight:
+                          isSelected ? FontWeight.w700 : FontWeight.w400,
+                      color: isSelected
+                          ? AppColors.primaryBlue
+                          : (isDark ? Colors.white : Colors.black87),
+                    ),
+                  ),
+                  trailing: isSelected
+                      ? const Icon(Icons.check_circle_rounded,
+                          color: AppColors.primaryBlue, size: 20)
+                      : null,
+                );
+              }).toList(),
+            ),
+          ),
+        );
+      },
     );
   }
 

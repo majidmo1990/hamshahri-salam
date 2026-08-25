@@ -7,9 +7,11 @@ class PropertyListing {
   final String categoryLabel;
   final String title;
   final String location;
+  final String district;
   final String? landArea;
   final String? buildArea;
   final String priceDisplay;
+  final int priceValue;
   final Map<String, dynamic> details;
   final String description;
   final List<String> imagePaths;
@@ -24,9 +26,11 @@ class PropertyListing {
     required this.categoryLabel,
     required this.title,
     required this.location,
+    required this.district,
     this.landArea,
     this.buildArea,
     required this.priceDisplay,
+    required this.priceValue,
     required this.details,
     required this.description,
     required this.imagePaths,
@@ -62,8 +66,10 @@ class AppData extends ChangeNotifier {
       categoryLabel: 'آپارتمانی',
       title: 'آپارتمان ۱۲۰ متری',
       location: 'سعادت‌آباد',
+      district: 'میدان آزادی و حومه',
       buildArea: '۱۲۰',
       priceDisplay: '۳ میلیارد تومان',
+      priceValue: 3000000000,
       details: const {
         'formData_bedrooms': '۳',
         'formData_floor': '۳',
@@ -81,8 +87,10 @@ class AppData extends ChangeNotifier {
       categoryLabel: 'تجاری',
       title: 'مغازه تجاری',
       location: 'خیابان ولیعصر',
+      district: 'پشت فرمانداری',
       landArea: '۴۵',
       priceDisplay: 'رهن ۲۰۰ / اجاره ۱۵',
+      priceValue: 15000000,
       details: const {
         'formData_landDeed': 'سند تک‌برگ',
         'formData_utilities': true,
@@ -99,8 +107,10 @@ class AppData extends ChangeNotifier {
       categoryLabel: 'زمین مزروعی',
       title: 'زمین مزروعی',
       location: 'کرج، اطراف',
+      district: 'میدان مادر',
       landArea: '۱۰۰۰',
       priceDisplay: '۸۰۰ میلیون تومان',
+      priceValue: 800000000,
       details: const {
         'formData_landDeed': 'قولنامه‌ای',
         'formData_utilities': false,
@@ -117,9 +127,11 @@ class AppData extends ChangeNotifier {
       categoryLabel: 'ویلایی',
       title: 'واحد ویلایی نوساز',
       location: 'لواسان',
+      district: 'شهرک',
       landArea: '۳۰۰',
       buildArea: '۲۰۰',
       priceDisplay: 'رهن ۵۰۰ / اجاره ۴۰',
+      priceValue: 40000000,
       details: const {
         'formData_bedrooms': '۴',
         'formData_buildYear': '۰',
