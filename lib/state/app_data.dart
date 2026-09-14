@@ -16,6 +16,7 @@ class PropertyListing {
   final String description;
   final List<String> imagePaths;
   final String? videoPath;
+  final String sellerPhone;
   final int views;
   final DateTime createdAt;
 
@@ -35,11 +36,35 @@ class PropertyListing {
     required this.description,
     required this.imagePaths,
     this.videoPath,
+    required this.sellerPhone,
     required this.views,
     required this.createdAt,
   });
 
   bool get isVilla => categoryId == 'villa';
+
+  PropertyListing copyWith({int? views}) {
+    return PropertyListing(
+      id: id,
+      dealType: dealType,
+      categoryId: categoryId,
+      categoryLabel: categoryLabel,
+      title: title,
+      location: location,
+      district: district,
+      landArea: landArea,
+      buildArea: buildArea,
+      priceDisplay: priceDisplay,
+      priceValue: priceValue,
+      details: details,
+      description: description,
+      imagePaths: imagePaths,
+      videoPath: videoPath,
+      sellerPhone: sellerPhone,
+      views: views ?? this.views,
+      createdAt: createdAt,
+    );
+  }
 }
 
 class Reservation {
@@ -77,6 +102,7 @@ class AppData extends ChangeNotifier {
       },
       description: 'آپارتمان نوساز با نور مناسب و دسترسی عالی.',
       imagePaths: const ['assets/images/slider1.jpg'],
+      sellerPhone: '۰۹۱۲۰۰۰۰۰۰۰',
       views: 340,
       createdAt: DateTime.now(),
     ),
@@ -97,6 +123,7 @@ class AppData extends ChangeNotifier {
       },
       description: 'مغازه با ویترین بزرگ، مناسب کسب‌وکارهای خدماتی.',
       imagePaths: const ['assets/images/slider2.jpg'],
+      sellerPhone: '۰۹۱۲۰۰۰۰۰۰۱',
       views: 210,
       createdAt: DateTime.now(),
     ),
@@ -117,6 +144,7 @@ class AppData extends ChangeNotifier {
       },
       description: 'زمین مناسب کشاورزی با دسترسی به جاده اصلی.',
       imagePaths: const ['assets/images/slider3.jpg'],
+      sellerPhone: '۰۹۱۲۰۰۰۰۰۰۲',
       views: 150,
       createdAt: DateTime.now(),
     ),
@@ -143,6 +171,7 @@ class AppData extends ChangeNotifier {
       },
       description: 'ویلای نوساز با محوطه اختصاصی و طراحی مدرن.',
       imagePaths: const ['assets/images/slider1.jpg'],
+      sellerPhone: '۰۹۱۲۰۰۰۰۰۰۳',
       views: 95,
       createdAt: DateTime.now(),
     ),
@@ -176,6 +205,15 @@ class AppData extends ChangeNotifier {
 
   void addListing(PropertyListing listing) {
     _listings.insert(0, listing);
+    notifyListeners();
+  }
+
+  void incrementViews(String id) {
+    final index = _listings.indexWhere((l) => l.id == id);
+    if (index == -1) return;
+    _listings[index] = _listings[index].copyWith(
+      views: _listings[index].views + 1,
+    );
     notifyListeners();
   }
 }

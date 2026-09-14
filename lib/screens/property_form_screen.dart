@@ -36,8 +36,10 @@ class _PropertyFormScreenState extends State<PropertyFormScreen> {
   final _priceController = TextEditingController();
   final _depositController = TextEditingController();
   final _rentController = TextEditingController();
+  final _phoneController = TextEditingController();
 
   String? _selectedDistrict;
+  String? _phoneError;
 
   bool get _isVilla => widget.category.id == 'villa';
   bool get _isApartment => widget.category.id == 'apartment';
@@ -52,6 +54,7 @@ class _PropertyFormScreenState extends State<PropertyFormScreen> {
     _priceController.dispose();
     _depositController.dispose();
     _rentController.dispose();
+    _phoneController.dispose();
     super.dispose();
   }
 
@@ -86,6 +89,15 @@ class _PropertyFormScreenState extends State<PropertyFormScreen> {
     return _parseNumber(_priceController.text);
   }
 
+  bool _validatePhoneAndProceed() {
+    final phone = _phoneController.text.trim();
+    final isValid = RegExp(r'^09[0-9]{9}$').hasMatch(phone);
+    setState(() {
+      _phoneError = isValid ? null : 'شماره موبایل معتبر وارد کنید (مثال: ۰۹۱۲۱۲۳۴۵۶۷)';
+    });
+    return isValid;
+  }
+
   Future<void> _submitProperty(List<String> images, String? video) async {
     await Future.delayed(const Duration(milliseconds: 900));
     if (!mounted) return;
@@ -112,6 +124,7 @@ class _PropertyFormScreenState extends State<PropertyFormScreen> {
       description: formData['formData_description'] as String? ?? '',
       imagePaths: images,
       videoPath: video,
+      sellerPhone: _phoneController.text.trim(),
       views: 0,
       createdAt: DateTime.now(),
     );
@@ -335,11 +348,26 @@ class _PropertyFormScreenState extends State<PropertyFormScreen> {
             _fieldLabel('قیمت (تومان)', isDark),
             _textField(_priceController, 'وارد کنید', isNumber: true),
           ],
+          const SizedBox(height: 16),
+          _fieldLabel('شماره تماس شما', isDark,
+              hint: 'برای هماهنگی بازدید و تماس خریداران'),
+          _textField(_phoneController, 'مثال: ۰۹۱۲۱۲۳۴۵۶۷', isNumber: true),
+          if (_phoneError != null) ...[
+            const SizedBox(height: 6),
+            Text(
+              _phoneError!,
+              style: const TextStyle(fontSize: 11.5, color: Colors.redAccent),
+            ),
+          ],
           const SizedBox(height: 28),
           SizedBox(
             height: 50,
             child: ElevatedButton(
-              onPressed: () => _goToStep(1),
+              onPressed: () {
+                if (_validatePhoneAndProceed()) {
+                  _goToStep(1);
+                }
+              },
               child: const Text('بعدی'),
             ),
           ),
@@ -430,16 +458,31 @@ class _PropertyFormScreenState extends State<PropertyFormScreen> {
     );
   }
 
-  Widget _fieldLabel(String text, bool isDark) {
+  Widget _fieldLabel(String text, bool isDark, {String? hint}) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 6),
-      child: Text(
-        text,
-        style: TextStyle(
-          fontSize: 13,
-          fontWeight: FontWeight.w600,
-          color: isDark ? Colors.white70 : Colors.black87,
-        ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            text,
+            style: TextStyle(
+              fontSize: 13,
+              fontWeight: FontWeight.w600,
+              color: isDark ? Colors.white70 : Colors.black87,
+            ),
+          ),
+          if (hint != null) ...[
+            const SizedBox(height: 2),
+            Text(
+              hint,
+              style: TextStyle(
+                fontSize: 11,
+                color: isDark ? Colors.grey[500] : Colors.grey[500],
+              ),
+            ),
+          ],
+        ],
       ),
     );
   }

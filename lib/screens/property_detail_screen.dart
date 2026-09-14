@@ -6,15 +6,40 @@ import '../theme/app_theme.dart';
 import '../state/app_data.dart';
 import '../widgets/property_image.dart';
 
-class PropertyDetailScreen extends StatelessWidget {
+class PropertyDetailScreen extends StatefulWidget {
   final PropertyListing property;
 
   const PropertyDetailScreen({super.key, required this.property});
 
   @override
+  State<PropertyDetailScreen> createState() => _PropertyDetailScreenState();
+}
+
+class _PropertyDetailScreenState extends State<PropertyDetailScreen> {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      Provider.of<AppData>(context, listen: false)
+          .incrementViews(widget.property.id);
+    });
+  }
+
+  void _callSeller(BuildContext context, String phone) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text("شماره تماس: $phone")),
+    );
+  }
+  }
+
+  @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final appData = context.watch<AppData>();
+    final property = appData.listings.firstWhere(
+      (p) => p.id == widget.property.id,
+      orElse: () => widget.property,
+    );
     final isFavorite = appData.isFavorite(property.id);
 
     return Directionality(
@@ -26,7 +51,7 @@ class PropertyDetailScreen extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                _buildHeaderImage(context, isDark, isFavorite),
+                _buildHeaderImage(context, isDark, isFavorite, property),
                 Padding(
                   padding: const EdgeInsets.all(20),
                   child: Column(
@@ -67,7 +92,7 @@ class PropertyDetailScreen extends StatelessWidget {
                           const SizedBox(width: 4),
                           Expanded(
                             child: Text(
-                              property.location,
+                              '${property.district} - ${property.location}',
                               style: TextStyle(
                                 fontSize: 13,
                                 color: isDark ? Colors.grey[400] : Colors.grey[600],
@@ -144,7 +169,7 @@ class PropertyDetailScreen extends StatelessWidget {
                           ),
                         ),
                         const SizedBox(height: 10),
-                        _buildDetailsGrid(isDark),
+                        _buildDetailsGrid(isDark, property),
                       ],
                       if (property.description.isNotEmpty) ...[
                         const SizedBox(height: 20),
@@ -166,12 +191,69 @@ class PropertyDetailScreen extends StatelessWidget {
                           ),
                         ),
                       ],
-                      const SizedBox(height: 24),
+                      const SizedBox(height: 20),
+                      Container(
+                        padding: const EdgeInsets.all(14),
+                        decoration: BoxDecoration(
+                          color: isDark ? AppColors.darkSurface : Colors.white,
+                          borderRadius: BorderRadius.circular(14),
+                          border: Border.all(
+                            color: isDark
+                                ? AppColors.darkGoldBorder
+                                : AppColors.skyBlue,
+                          ),
+                        ),
+                        child: Row(
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.all(10),
+                              decoration: BoxDecoration(
+                                color: AppColors.goldLight.withValues(alpha: 0.15),
+                                shape: BoxShape.circle,
+                              ),
+                              child: const Icon(Icons.person_outline_rounded,
+                                  color: AppColors.goldLight),
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    'تماس با آگهی‌دهنده',
+                                    style: TextStyle(
+                                      fontSize: 11.5,
+                                      color: isDark
+                                          ? Colors.grey[400]
+                                          : Colors.grey[600],
+                                    ),
+                                  ),
+                                  const SizedBox(height: 2),
+                                  Text(
+                                    property.sellerPhone,
+                                    style: TextStyle(
+                                      fontSize: 13.5,
+                                      fontWeight: FontWeight.w700,
+                                      color: isDark ? Colors.white : Colors.black87,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            IconButton(
+                              onPressed: () => _callSeller(context, property.sellerPhone),
+                              icon: const Icon(Icons.call_rounded,
+                                  color: AppColors.goldLight),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 20),
                       SizedBox(
                         width: double.infinity,
                         height: 52,
                         child: ElevatedButton.icon(
-                          onPressed: () => _showReserveSheet(context, isDark),
+                          onPressed: () => _showReserveSheet(context, isDark, property),
                           icon: const Icon(Icons.calendar_month_rounded),
                           label: const Text(
                             'رزرو و درخواست تماس',
@@ -191,11 +273,16 @@ class PropertyDetailScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildHeaderImage(BuildContext context, bool isDark, bool isFavorite) {
+  Widget _buildHeaderImage(
+    BuildContext context,
+    bool isDark,
+    bool isFavorite,
+    PropertyListing property,
+  ) {
     return Stack(
       children: [
         GestureDetector(
-          onTap: () => _openGallery(context),
+          onTap: () => _openGallery(context, property),
           child: ClipRRect(
             borderRadius: const BorderRadius.vertical(bottom: Radius.circular(20)),
             child: buildPropertyImage(
@@ -233,7 +320,7 @@ class PropertyDetailScreen extends StatelessWidget {
             bottom: 12,
             right: 12,
             child: GestureDetector(
-              onTap: () => _openGallery(context),
+              onTap: () => _openGallery(context, property),
               child: Container(
                 padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                 decoration: BoxDecoration(
@@ -255,7 +342,7 @@ class PropertyDetailScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildDetailsGrid(bool isDark) {
+  Widget _buildDetailsGrid(bool isDark, PropertyListing property) {
     final labels = _detailLabels();
     final entries = property.details.entries
         .where((e) => labels.containsKey(e.key) && e.value != null && e.value != '')
@@ -372,7 +459,7 @@ class PropertyDetailScreen extends StatelessWidget {
     );
   }
 
-  void _openGallery(BuildContext context) {
+  void _openGallery(BuildContext context, PropertyListing property) {
     Navigator.of(context).push(
       MaterialPageRoute(
         builder: (_) => _GalleryScreen(property: property),
@@ -381,7 +468,7 @@ class PropertyDetailScreen extends StatelessWidget {
     );
   }
 
-  void _showReserveSheet(BuildContext context, bool isDark) {
+  void _showReserveSheet(BuildContext context, bool isDark, PropertyListing property) {
     final phoneController = TextEditingController();
 
     showModalBottomSheet(
@@ -446,7 +533,15 @@ class PropertyDetailScreen extends StatelessWidget {
                   child: ElevatedButton(
                     onPressed: () {
                       final phone = phoneController.text.trim();
-                      if (phone.isEmpty) return;
+                      final isValid = RegExp(r'^09[0-9]{9}$').hasMatch(phone);
+                      if (!isValid) {
+                        ScaffoldMessenger.of(sheetContext).showSnackBar(
+                          const SnackBar(
+                            content: Text('شماره موبایل معتبر وارد کنید'),
+                          ),
+                        );
+                        return;
+                      }
 
                       Provider.of<AppData>(context, listen: false)
                           .addReservation(property, phone);
