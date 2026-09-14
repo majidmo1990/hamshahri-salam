@@ -27,9 +27,8 @@ class _PropertyDetailScreenState extends State<PropertyDetailScreen> {
 
   void _callSeller(BuildContext context, String phone) {
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text("شماره تماس: $phone")),
+      SnackBar(content: Text('شماره تماس: $phone')),
     );
-  }
   }
 
   @override
