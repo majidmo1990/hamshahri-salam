@@ -1,17 +1,15 @@
 import 'dart:io';
 import 'package:dio/dio.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-
+import 'package:dio/io.dart';
 class ApiService {
-  static const String baseUrl = 'http://45.156.186.140';
-
+  static const String baseUrl = 'https://rumiland.org';
   static final ApiService _instance = ApiService._internal();
   factory ApiService() => _instance;
   ApiService._internal();
 
   late final Dio _dio;
   bool _initialized = false;
-
   Future<void> init() async {
     if (_initialized) return;
 
@@ -22,6 +20,16 @@ class ApiService {
       sendTimeout: const Duration(seconds: 120),
       headers: {'Accept': 'application/json'},
     ));
+
+    // SSL bypass برای اروان (موقت)
+    _dio.httpClientAdapter = IOHttpClientAdapter(
+      createHttpClient: () {
+        final client = HttpClient();
+        client.badCertificateCallback =
+            (X509Certificate cert, String host, int port) => true;
+        return client;
+      },
+    );
 
     _dio.interceptors.add(InterceptorsWrapper(
       onRequest: (options, handler) async {
