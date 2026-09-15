@@ -44,7 +44,8 @@ class PropertyListing {
 
   // Backward compat: اسم قبلی imagePaths هم کار کنه
   List<String> get imagePaths => imageUrls;
-
+  // Backward compat: اسم قبلی videoPath هم کار کنه
+  String? get videoPath => videoUrl;	
   factory PropertyListing.fromJson(Map<String, dynamic> json) {
     return PropertyListing(
       id: json['id'] as int,

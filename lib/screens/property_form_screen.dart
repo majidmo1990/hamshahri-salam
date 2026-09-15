@@ -8,6 +8,8 @@ import '../widgets/media_upload_step.dart';
 import 'property_type_screen.dart';
 import 'category_selection_screen.dart';
 import 'main_navigation_screen.dart';
+import 'dart:io';
+import '../services/api_service.dart';
 
 class PropertyFormScreen extends StatefulWidget {
   final DealType dealType;
@@ -99,37 +101,90 @@ class _PropertyFormScreenState extends State<PropertyFormScreen> {
   }
 
   Future<void> _submitProperty(List<String> images, String? video) async {
-    await Future.delayed(const Duration(milliseconds: 900));
+  void _showErrorDialog(String message) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        final isDark = Theme.of(context).brightness == Brightness.dark;
+        return AlertDialog(
+          backgroundColor: isDark ? AppColors.darkSurface : Colors.white,
+          title: const Text('خطا'),
+          content: Text(message),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('باشه'),
+            ),
+          ],
+        );
+      },
+    );
+  }
     if (!mounted) return;
 
-    final listing = PropertyListing(
-      id: DateTime.now().millisecondsSinceEpoch.toString(),
-      dealType: widget.dealType == DealType.rent ? 'rent' : 'sell',
-      categoryId: widget.category.id,
-      categoryLabel: widget.category.label,
-      title: _titleController.text.trim().isEmpty
-          ? widget.category.label
-          : _titleController.text.trim(),
-      location: _locationController.text.trim(),
-      district: _selectedDistrict ?? kDistricts.first,
-      landArea: _landAreaController.text.trim().isEmpty
-          ? null
-          : _landAreaController.text.trim(),
-      buildArea: _buildAreaController.text.trim().isEmpty
-          ? null
-          : _buildAreaController.text.trim(),
-      priceDisplay: _buildPriceDisplay(),
-      priceValue: _buildPriceValue(),
-      details: Map<String, dynamic>.from(formData),
-      description: formData['formData_description'] as String? ?? '',
-      imagePaths: images,
-      videoPath: video,
-      sellerPhone: _phoneController.text.trim(),
-      views: 0,
-      createdAt: DateTime.now(),
-    );
+    // ۱. آپلود عکس‌ها به سرور
+    final api = ApiService();
+    final uploadedImagePaths = <String>[];
 
-    Provider.of<AppData>(context, listen: false).addListing(listing);
+    try {
+      for (final path in images) {
+        final file = File(path);
+        if (await file.exists()) {
+          final relPath = await api.uploadImage(file);
+          uploadedImagePaths.add(relPath);
+        }
+      }
+
+      // ۲. آپلود ویدیو
+      String? uploadedVideoPath;
+      if (video != null) {
+        final videoFile = File(video);
+        if (await videoFile.exists()) {
+          uploadedVideoPath = await api.uploadVideo(videoFile);
+        }
+      }
+
+      // ۳. ساخت داده برای ارسال
+      final data = <String, dynamic>{
+        'deal_type': widget.dealType == DealType.rent ? 'rent' : 'sell',
+        'category_id': widget.category.id,
+        'category_label': widget.category.label,
+        'title': _titleController.text.trim().isEmpty
+            ? widget.category.label
+            : _titleController.text.trim(),
+        'location': _locationController.text.trim(),
+        'district': _selectedDistrict ?? kDistricts.first,
+        'land_area': _landAreaController.text.trim().isEmpty
+            ? null
+            : _landAreaController.text.trim(),
+        'build_area': _buildAreaController.text.trim().isEmpty
+            ? null
+            : _buildAreaController.text.trim(),
+        'price_display': _buildPriceDisplay(),
+        'price_value': _buildPriceValue(),
+        'details': Map<String, dynamic>.from(formData),
+        'description': formData['formData_description'] as String? ?? '',
+        'image_paths': uploadedImagePaths,
+        'video_path': uploadedVideoPath,
+        'seller_phone': _phoneController.text.trim(),
+      };
+
+      // ۴. ارسال به سرور
+      final appData = Provider.of<AppData>(context, listen: false);
+      final listing = await appData.addListing(data);
+
+      if (!mounted) return;
+
+      if (listing == null) {
+        _showErrorDialog(appData.error ?? 'خطا در ثبت ملک');
+        return;
+      }
+
+    } catch (e) {
+      if (!mounted) return;
+      _showErrorDialog('خطا در آپلود: $e');
+      return;
+    }
 
     if (!mounted) return;
 
