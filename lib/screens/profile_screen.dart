@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../theme/app_theme.dart';
 import '../theme/theme_provider.dart';
+import '../providers/auth_provider.dart';
+import 'login_screen.dart';
 import 'notifications_screen.dart';
 import 'support_screen.dart';
 import 'about_screen.dart';
@@ -9,10 +11,60 @@ import 'about_screen.dart';
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
 
+  Future<void> _openLogin(BuildContext context) async {
+    final result = await Navigator.of(context).push(
+      MaterialPageRoute(builder: (_) => const LoginScreen()),
+    );
+    if (result == true && context.mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('خوش آمدید 👋'),
+          backgroundColor: AppColors.goldDark,
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+    }
+  }
+
+  Future<void> _logout(BuildContext context) async {
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('خروج از حساب'),
+        content: const Text('مطمئنی می‌خوای خارج بشی؟'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('لغو'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: const Text(
+              'خروج',
+              style: TextStyle(color: Colors.red),
+            ),
+          ),
+        ],
+      ),
+    );
+    if (confirm == true && context.mounted) {
+      await context.read<AuthProvider>().logout();
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('خارج شدید'),
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final themeProvider = context.watch<ThemeProvider>();
+    final auth = context.watch<AuthProvider>();
 
     return Scaffold(
       backgroundColor: isDark ? AppColors.darkBg : AppColors.lightBg,
@@ -38,7 +90,11 @@ class ProfileScreen extends StatelessWidget {
                   ),
                   const SizedBox(height: 12),
                   Text(
-                    'کاربر مهمان',
+                    auth.isLoggedIn
+                        ? (auth.fullName?.isNotEmpty == true
+                            ? auth.fullName!
+                            : 'کاربر')
+                        : 'کاربر مهمان',
                     style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.w700,
@@ -47,12 +103,67 @@ class ProfileScreen extends StatelessWidget {
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    'برای ثبت اطلاعات کامل، وارد شوید',
+                    auth.isLoggedIn
+                        ? (auth.phone ?? '')
+                        : 'برای ثبت اطلاعات کامل، وارد شوید',
                     style: TextStyle(
                       fontSize: 12,
                       color: isDark ? Colors.grey[400] : Colors.grey[600],
                     ),
                   ),
+                  const SizedBox(height: 16),
+                  if (!auth.isLoggedIn)
+                    SizedBox(
+                      width: 200,
+                      height: 46,
+                      child: ElevatedButton.icon(
+                        onPressed: () => _openLogin(context),
+                        icon: const Icon(Icons.login_rounded, size: 18),
+                        label: const Text(
+                          'ورود / ثبت‌نام',
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppColors.goldPrimary,
+                          foregroundColor: Colors.black,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(14),
+                          ),
+                          elevation: 4,
+                        ),
+                      ),
+                    )
+                  else
+                    SizedBox(
+                      width: 200,
+                      height: 46,
+                      child: OutlinedButton.icon(
+                        onPressed: () => _logout(context),
+                        icon: const Icon(Icons.logout_rounded, size: 18),
+                        label: const Text(
+                          'خروج از حساب',
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor:
+                              isDark ? Colors.white : Colors.black87,
+                          side: BorderSide(
+                            color: isDark
+                                ? AppColors.darkGoldBorder
+                                : AppColors.lightBorder,
+                          ),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(14),
+                          ),
+                        ),
+                      ),
+                    ),
                 ],
               ),
             ),
