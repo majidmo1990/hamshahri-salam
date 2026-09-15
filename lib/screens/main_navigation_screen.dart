@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../theme/app_theme.dart';
+import '../providers/auth_provider.dart';
 import '../widgets/bottom_nav.dart';
 import 'home_content_screen.dart';
 import 'favorites_screen.dart';
 import 'reservations_screen.dart';
 import 'profile_screen.dart';
 import 'property_type_screen.dart';
+import 'login_screen.dart';
 
 class MainNavigationScreen extends StatefulWidget {
   const MainNavigationScreen({super.key});
@@ -16,6 +19,25 @@ class MainNavigationScreen extends StatefulWidget {
 
 class _MainNavigationScreenState extends State<MainNavigationScreen> {
   int _navIndex = 0;
+
+  Future<void> _onAddPropertyTap() async {
+    final auth = context.read<AuthProvider>();
+
+    // اگه لاگین نبود، اول صفحه ورود
+    if (!auth.isLoggedIn) {
+      final ok = await Navigator.of(context).push<bool>(
+        MaterialPageRoute(builder: (_) => const LoginScreen()),
+      );
+      if (ok != true) return;
+      if (!mounted) return;
+    }
+
+    // حالا برو به انتخاب نوع ملک
+    if (!mounted) return;
+    Navigator.of(context).push(
+      MaterialPageRoute(builder: (_) => const PropertyTypeScreen()),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -68,13 +90,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
               shape: const CircleBorder(),
               child: InkWell(
                 customBorder: const CircleBorder(),
-                onTap: () {
-                  Navigator.of(context).push(
-                    MaterialPageRoute(
-                      builder: (_) => const PropertyTypeScreen(),
-                    ),
-                  );
-                },
+                onTap: _onAddPropertyTap,
                 child: const Icon(
                   Icons.add_rounded,
                   color: Colors.black,
