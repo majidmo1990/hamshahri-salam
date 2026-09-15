@@ -4,14 +4,17 @@ import 'package:provider/provider.dart';
 import 'theme/app_theme.dart';
 import 'theme/theme_provider.dart';
 import 'state/app_data.dart';
+import 'providers/auth_provider.dart';
 import 'screens/splash_screen.dart';
 
 void main() {
+  WidgetsFlutterBinding.ensureInitialized();
   runApp(
     MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (_) => ThemeProvider()),
         ChangeNotifierProvider(create: (_) => AppData()),
+        ChangeNotifierProvider(create: (_) => AuthProvider()..init()),
       ],
       child: const HamshahriSalamApp(),
     ),
