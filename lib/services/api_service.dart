@@ -1,10 +1,10 @@
 import 'dart:io';
 import 'package:dio/dio.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:dio/io.dart';
-/// سرویس مرکزی برای ارتباط با API
+
 class ApiService {
   static const String baseUrl = 'http://45.156.186.140';
+
   static final ApiService _instance = ApiService._internal();
   factory ApiService() => _instance;
   ApiService._internal();
@@ -17,20 +17,11 @@ class ApiService {
 
     _dio = Dio(BaseOptions(
       baseUrl: baseUrl,
-      connectTimeout: const Duration(seconds: 60),
-      receiveTimeout: const Duration(seconds: 120),
+      connectTimeout: const Duration(seconds: 30),
+      receiveTimeout: const Duration(seconds: 60),
       sendTimeout: const Duration(seconds: 120),
       headers: {'Accept': 'application/json'},
     ));
-
-    // ⚠️ موقت: برای تست SSL. بعداً حذف می‌کنیم.
-      createHttpClient: () {
-        final client = HttpClient();
-        client.badCertificateCallback =
-            (X509Certificate cert, String host, int port) => true;
-        return client;
-      },
-    );
 
     _dio.interceptors.add(InterceptorsWrapper(
       onRequest: (options, handler) async {
@@ -50,6 +41,7 @@ class ApiService {
 
     _initialized = true;
   }
+
   Dio get dio => _dio;
 
   static const _tokenKey = 'auth_token';
@@ -292,31 +284,27 @@ class ApiService {
     print('URL: ${e.requestOptions.uri}');
     print('Status: ${e.response?.statusCode}');
     print('Body: ${e.response?.data}');
-    print('Error: ${e.error}');
     print('====================');
 
-    switch (e.type) {
-      case DioExceptionType.connectionTimeout:
-      case DioExceptionType.sendTimeout:
-      case DioExceptionType.receiveTimeout:
-        return 'اتصال به سرور قطع شد';
-      case DioExceptionType.badResponse:
-        final data = e.response?.data;
-        if (data is Map && data['detail'] != null) {
-          return data['detail'].toString();
-        }
-        if (e.response?.statusCode == 401) return 'لطفاً وارد شوید';
-        if (e.response?.statusCode == 403) return 'دسترسی ندارید';
-        if (e.response?.statusCode == 404) return 'یافت نشد';
-        if (e.response?.statusCode == 500) return 'خطای سرور';
-        return 'خطا: ${e.response?.statusCode}';
-      case DioExceptionType.connectionError:
-        return 'اتصال شبکه ممکن نیست';
-      case DioExceptionType.cancel:
-        return 'درخواست لغو شد';
-      case DioExceptionType.badCertificate:
-        return 'گواهی SSL نامعتبر';
-      case DioExceptionType.unknown:
-        return 'خطای ناشناخته: ${e.message}';
+    if (e.type == DioExceptionType.connectionTimeout ||
+        e.type == DioExceptionType.sendTimeout ||
+        e.type == DioExceptionType.receiveTimeout) {
+      return 'اتصال به سرور قطع شد';
     }
+    if (e.type == DioExceptionType.connectionError) {
+      return 'اتصال شبکه ممکن نیست';
+    }
+    if (e.response != null) {
+      final data = e.response!.data;
+      if (data is Map && data['detail'] != null) {
+        return data['detail'].toString();
+      }
+      if (e.response!.statusCode == 401) return 'لطفاً وارد شوید';
+      if (e.response!.statusCode == 403) return 'دسترسی ندارید';
+      if (e.response!.statusCode == 404) return 'یافت نشد';
+      if (e.response!.statusCode == 500) return 'خطای سرور';
+      return 'خطا: ${e.response!.statusCode}';
+    }
+    return 'خطای ناشناخته: ${e.message}';
   }
+}
