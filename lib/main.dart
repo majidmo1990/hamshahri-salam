@@ -13,7 +13,7 @@ void main() {
     MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (_) => ThemeProvider()),
-        ChangeNotifierProvider(create: (_) => AppData()),
+	ChangeNotifierProvider(create: (_) => AppData()..init()),
         ChangeNotifierProvider(create: (_) => AuthProvider()..init()),
       ],
       child: const HamshahriSalamApp(),

@@ -12,7 +12,7 @@ class PropertyListing {
   final int priceValue;
   final Map<String, dynamic> details;
   final String description;
-  final List<String> imageUrls;
+  final List<String> imageUrls; // URLهای سرور
   final String? videoUrl;
   final String sellerPhone;
   final int views;
@@ -41,6 +41,9 @@ class PropertyListing {
 
   bool get isVilla => categoryId == 'villa';
   bool get isRent => dealType == 'rent';
+
+  // Backward compat: اسم قبلی imagePaths هم کار کنه
+  List<String> get imagePaths => imageUrls;
 
   factory PropertyListing.fromJson(Map<String, dynamic> json) {
     return PropertyListing(
