@@ -1,7 +1,7 @@
 import 'dart:io';
 import 'package:dio/dio.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-
+import 'package:dio/io.dart';
 /// سرویس مرکزی برای ارتباط با API
 class ApiService {
   static const String baseUrl = 'https://rumiland.org';
@@ -18,11 +18,21 @@ class ApiService {
 
     _dio = Dio(BaseOptions(
       baseUrl: baseUrl,
-      connectTimeout: const Duration(seconds: 30),
-      receiveTimeout: const Duration(seconds: 60),
+      connectTimeout: const Duration(seconds: 60),
+      receiveTimeout: const Duration(seconds: 120),
       sendTimeout: const Duration(seconds: 120),
       headers: {'Accept': 'application/json'},
     ));
+
+    // ⚠️ موقت: برای تست SSL. بعداً حذف می‌کنیم.
+    _dio.httpClientAdapter = IOHttpClientAdapter(
+      createHttpClient: () {
+        final client = HttpClient();
+        client.badCertificateCallback =
+            (X509Certificate cert, String host, int port) => true;
+        return client;
+      },
+    );
 
     _dio.interceptors.add(InterceptorsWrapper(
       onRequest: (options, handler) async {
@@ -42,7 +52,6 @@ class ApiService {
 
     _initialized = true;
   }
-
   Dio get dio => _dio;
 
   static const _tokenKey = 'auth_token';

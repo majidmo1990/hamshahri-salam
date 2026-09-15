@@ -51,7 +51,7 @@ class AuthProvider extends ChangeNotifier {
         final data = await _api.login(phone: cleanPhone, password: password);
         await _setUserFromResponse(data);
         return true;
-      } on Exception catch (e) {
+      } catch (e) {
         final msg = e.toString();
         if (msg.contains('شماره یا رمز اشتباه')) {
           try {
@@ -62,7 +62,7 @@ class AuthProvider extends ChangeNotifier {
             );
             await _setUserFromResponse(data);
             return true;
-          } on Exception catch (regErr) {
+          } catch (regErr) {
             final regMsg = regErr.toString();
             if (regMsg.contains('قبلاً ثبت‌نام')) {
               _error = 'رمز عبور اشتباه است';
