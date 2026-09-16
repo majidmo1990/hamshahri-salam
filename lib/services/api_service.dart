@@ -13,6 +13,10 @@ class ApiService {
   Future<void> init() async {
     if (_initialized) return;
 
+    print('========== INIT ==========');
+    print('baseUrl: $baseUrl');
+    print('==========================');
+
     _dio = Dio(BaseOptions(
       baseUrl: baseUrl,
       connectTimeout: const Duration(seconds: 30),
@@ -21,25 +25,34 @@ class ApiService {
       headers: {'Accept': 'application/json'},
     ));
 
-    // SSL bypass برای اروان (موقت)
     _dio.httpClientAdapter = IOHttpClientAdapter(
       createHttpClient: () {
         final client = HttpClient();
         client.badCertificateCallback =
-            (X509Certificate cert, String host, int port) => true;
+            (X509Certificate cert, String host, int port) {
+          print('SSL BYPASS: $host:$port');
+          return true;
+        };
         return client;
       },
     );
 
     _dio.interceptors.add(InterceptorsWrapper(
       onRequest: (options, handler) async {
+        print('>>> REQUEST: ${options.method} ${options.uri}');
         final token = await getToken();
         if (token != null && token.isNotEmpty) {
           options.headers['Authorization'] = 'Bearer $token';
         }
         handler.next(options);
       },
+      onResponse: (response, handler) {
+        print('<<< RESPONSE: ${response.statusCode} ${response.requestOptions.uri}');
+        handler.next(response);
+      },
       onError: (error, handler) async {
+        print('!!! ERROR: ${error.type} - ${error.message}');
+        print('!!! URL: ${error.requestOptions.uri}');
         if (error.response?.statusCode == 401) {
           await clearToken();
         }
@@ -49,7 +62,6 @@ class ApiService {
 
     _initialized = true;
   }
-
   Dio get dio => _dio;
 
   static const _tokenKey = 'auth_token';
