@@ -3,7 +3,8 @@ import 'package:dio/dio.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:dio/io.dart';
 class ApiService {
-  static const String baseUrl = 'https://rumiland.org';
+  static const String baseUrl = 'https://rumiland.org/hamshahri';
+  static const String siteUrl = 'https://rumiland.org';
   static final ApiService _instance = ApiService._internal();
   factory ApiService() => _instance;
   ApiService._internal();
@@ -294,7 +295,7 @@ class ApiService {
   static String fullUrl(String? path) {
     if (path == null || path.isEmpty) return '';
     if (path.startsWith('http')) return path;
-    return '$baseUrl/uploads/$path';
+    return '$siteUrl/uploads/$path';
   }
 
   String _handleError(DioException e) {
