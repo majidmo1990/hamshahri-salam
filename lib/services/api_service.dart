@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'package:dio/dio.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:dio_smart_retry/dio_smart_retry.dart';
 import 'package:dio/io.dart';
 class ApiService {
   static const String baseUrl = 'https://rumiland.org/hamshahri';
@@ -36,6 +37,19 @@ class ApiService {
         };
         return client;
       },
+    );
+
+    _dio.interceptors.add(
+      RetryInterceptor(
+        dio: _dio,
+        logPrint: print,
+        retries: 3,
+        retryDelays: const [
+          Duration(seconds: 1),
+          Duration(seconds: 2),
+          Duration(seconds: 3),
+        ],
+      ),
     );
 
     _dio.interceptors.add(InterceptorsWrapper(
