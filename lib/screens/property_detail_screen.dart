@@ -670,7 +670,7 @@ class _VideoPlayerViewState extends State<_VideoPlayerView> {
   @override
   void initState() {
     super.initState();
-    _controller = VideoPlayerController.file(File(widget.path))
+    _controller = (widget.path.startsWith('http://') || widget.path.startsWith('https://')) ? VideoPlayerController.networkUrl(Uri.parse(widget.path)) : VideoPlayerController.file(File(widget.path))
       ..initialize().then((_) {
         if (mounted) setState(() => _ready = true);
       });

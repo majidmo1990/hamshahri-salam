@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../theme/app_theme.dart';
 import '../state/app_data.dart';
+import '../providers/auth_provider.dart';
 import '../widgets/home_slider.dart';
 import '../widgets/action_cards.dart';
 import '../widgets/property_card.dart';
@@ -9,9 +10,27 @@ import 'property_type_screen.dart';
 import 'property_list_screen.dart';
 import 'search_screen.dart';
 import 'notifications_screen.dart';
+import 'login_screen.dart';
 
 class HomeContentScreen extends StatelessWidget {
   const HomeContentScreen({super.key});
+
+  Future<void> _onAddPropertyTap(BuildContext context) async {
+    final auth = context.read<AuthProvider>();
+
+    if (!auth.isLoggedIn) {
+      final ok = await Navigator.of(context).push<bool>(
+        MaterialPageRoute(builder: (_) => const LoginScreen()),
+      );
+      if (ok != true) return;
+      if (!context.mounted) return;
+    }
+
+    if (!context.mounted) return;
+    Navigator.of(context).push(
+      MaterialPageRoute(builder: (_) => const PropertyTypeScreen()),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -34,11 +53,7 @@ class HomeContentScreen extends StatelessWidget {
                 MaterialPageRoute(builder: (_) => const PropertyListScreen()),
               );
             },
-            onAddProperty: () {
-              Navigator.of(context).push(
-                MaterialPageRoute(builder: (_) => const PropertyTypeScreen()),
-              );
-            },
+            onAddProperty: () => _onAddPropertyTap(context),
           ),
           const SizedBox(height: 24),
           Row(

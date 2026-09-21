@@ -17,6 +17,26 @@ Widget buildPropertyImage(
       errorBuilder: errorBuilder,
     );
   }
+
+  if (path.startsWith('http://') || path.startsWith('https://')) {
+    return Image.network(
+      path,
+      fit: fit,
+      width: width,
+      height: height,
+      errorBuilder: errorBuilder,
+      loadingBuilder: (context, child, progress) {
+        if (progress == null) return child;
+        return Container(
+          width: width,
+          height: height,
+          alignment: Alignment.center,
+          child: const CircularProgressIndicator(strokeWidth: 2),
+        );
+      },
+    );
+  }
+
   return Image.file(
     File(path),
     fit: fit,
