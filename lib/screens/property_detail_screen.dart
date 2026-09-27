@@ -25,11 +25,6 @@ class _PropertyDetailScreenState extends State<PropertyDetailScreen> {
     });
   }
 
-  void _callSeller(BuildContext context, String phone) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('شماره تماس: $phone')),
-    );
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -190,63 +185,6 @@ class _PropertyDetailScreenState extends State<PropertyDetailScreen> {
                           ),
                         ),
                       ],
-                      const SizedBox(height: 20),
-                      Container(
-                        padding: const EdgeInsets.all(14),
-                        decoration: BoxDecoration(
-                          color: isDark ? AppColors.darkSurface : Colors.white,
-                          borderRadius: BorderRadius.circular(14),
-                          border: Border.all(
-                            color: isDark
-                                ? AppColors.darkGoldBorder
-                                : AppColors.skyBlue,
-                          ),
-                        ),
-                        child: Row(
-                          children: [
-                            Container(
-                              padding: const EdgeInsets.all(10),
-                              decoration: BoxDecoration(
-                                color: AppColors.goldLight.withValues(alpha: 0.15),
-                                shape: BoxShape.circle,
-                              ),
-                              child: const Icon(Icons.person_outline_rounded,
-                                  color: AppColors.goldLight),
-                            ),
-                            const SizedBox(width: 12),
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    'تماس با آگهی‌دهنده',
-                                    style: TextStyle(
-                                      fontSize: 11.5,
-                                      color: isDark
-                                          ? Colors.grey[400]
-                                          : Colors.grey[600],
-                                    ),
-                                  ),
-                                  const SizedBox(height: 2),
-                                  Text(
-                                    property.sellerPhone,
-                                    style: TextStyle(
-                                      fontSize: 13.5,
-                                      fontWeight: FontWeight.w700,
-                                      color: isDark ? Colors.white : Colors.black87,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                            IconButton(
-                              onPressed: () => _callSeller(context, property.sellerPhone),
-                              icon: const Icon(Icons.call_rounded,
-                                  color: AppColors.goldLight),
-                            ),
-                          ],
-                        ),
-                      ),
                       const SizedBox(height: 20),
                       SizedBox(
                         width: double.infinity,

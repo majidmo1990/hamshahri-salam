@@ -7,60 +7,36 @@ class PropertyCategory {
   final String id;
   final String label;
   final IconData icon;
-
-  const PropertyCategory({
-    required this.id,
-    required this.label,
-    required this.icon,
-  });
+  const PropertyCategory({required this.id, required this.label, required this.icon});
 }
 
 class CategorySelectionScreen extends StatelessWidget {
   final DealType dealType;
-
   const CategorySelectionScreen({super.key, required this.dealType});
 
   List<PropertyCategory> get _categories {
-    // ترتیب یکسان برای اجاره و فروش طبق درخواست:
-    // ویلایی، آپارتمانی، زمین مسکونی، زمین مزروعی، تجاری
+    const villa = PropertyCategory(id: 'villa', label: 'ویلایی', icon: Icons.villa_outlined);
+    const apartment = PropertyCategory(id: 'apartment', label: 'آپارتمان', icon: Icons.apartment_outlined);
+
+    if (dealType == DealType.rent) {
+      return const [villa, apartment];
+    }
+
     return const [
-      PropertyCategory(
-        id: 'villa',
-        label: 'ویلایی',
-        icon: Icons.villa_outlined,
-      ),
-      PropertyCategory(
-        id: 'apartment',
-        label: 'آپارتمانی',
-        icon: Icons.apartment_outlined,
-      ),
-      PropertyCategory(
-        id: 'residential_land',
-        label: 'زمین مسکونی',
-        icon: Icons.terrain_outlined,
-      ),
-      PropertyCategory(
-        id: 'farmland',
-        label: 'زمین مزروعی',
-        icon: Icons.grass_outlined,
-      ),
-      PropertyCategory(
-        id: 'commercial',
-        label: 'تجاری',
-        icon: Icons.storefront_outlined,
-      ),
+      villa,
+      apartment,
+      PropertyCategory(id: 'residential_land', label: 'زمین مسکونی', icon: Icons.terrain_outlined),
+      PropertyCategory(id: 'farmland', label: 'زمین مزروعی', icon: Icons.grass_outlined),
+      PropertyCategory(id: 'commercial', label: 'تجاری', icon: Icons.storefront_outlined),
     ];
   }
 
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-
     return Scaffold(
       backgroundColor: isDark ? AppColors.darkBg : AppColors.lightBg,
-      appBar: AppBar(
-        title: Text(dealType == DealType.rent ? 'اجاره' : 'فروش'),
-      ),
+      appBar: AppBar(title: Text(dealType == DealType.rent ? 'اجاره' : 'فروش')),
       body: SafeArea(
         child: ListView.separated(
           padding: const EdgeInsets.all(16),
@@ -70,16 +46,11 @@ class CategorySelectionScreen extends StatelessWidget {
             final category = _categories[index];
             return _CategoryTile(
               category: category,
-              onTap: () {
-                Navigator.of(context).push(
-                  MaterialPageRoute(
-                    builder: (_) => PropertyFormScreen(
-                      dealType: dealType,
-                      category: category,
-                    ),
-                  ),
-                );
-              },
+              onTap: () => Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (_) => PropertyFormScreen(dealType: dealType, category: category),
+                ),
+              ),
             );
           },
         ),
@@ -91,13 +62,11 @@ class CategorySelectionScreen extends StatelessWidget {
 class _CategoryTile extends StatelessWidget {
   final PropertyCategory category;
   final VoidCallback onTap;
-
   const _CategoryTile({required this.category, required this.onTap});
 
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-
     return Material(
       color: isDark ? AppColors.darkSurface : Colors.white,
       borderRadius: BorderRadius.circular(14),
@@ -107,10 +76,7 @@ class _CategoryTile extends StatelessWidget {
         child: Container(
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(14),
-            border: Border.all(
-              color: isDark ? AppColors.darkBorder : AppColors.skyBlue,
-              width: 1.1,
-            ),
+            border: Border.all(color: isDark ? AppColors.darkBorder : AppColors.skyBlue, width: 1.1),
           ),
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
           child: Row(
@@ -118,32 +84,17 @@ class _CategoryTile extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.all(10),
                 decoration: BoxDecoration(
-                  color: isDark
-                      ? AppColors.primaryBlue.withValues(alpha: 0.15)
-                      : AppColors.skyBlue,
+                  color: isDark ? AppColors.primaryBlue.withValues(alpha: 0.15) : AppColors.skyBlue,
                   borderRadius: BorderRadius.circular(10),
                 ),
-                child: Icon(
-                  category.icon,
-                  color: AppColors.primaryBlue,
-                  size: 22,
-                ),
+                child: Icon(category.icon, color: AppColors.primaryBlue, size: 22),
               ),
               const SizedBox(width: 14),
               Expanded(
-                child: Text(
-                  category.label,
-                  style: TextStyle(
-                    fontSize: 14.5,
-                    fontWeight: FontWeight.w600,
-                    color: isDark ? Colors.white : Colors.black87,
-                  ),
-                ),
+                child: Text(category.label,
+                    style: TextStyle(fontSize: 14.5, fontWeight: FontWeight.w600, color: isDark ? Colors.white : Colors.black87)),
               ),
-              Icon(
-                Icons.chevron_left_rounded,
-                color: isDark ? Colors.grey[500] : Colors.grey[400],
-              ),
+              Icon(Icons.chevron_left_rounded, color: isDark ? Colors.grey[500] : Colors.grey[400]),
             ],
           ),
         ),

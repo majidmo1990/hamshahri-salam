@@ -15,7 +15,7 @@ class PropertyListScreen extends StatefulWidget {
 class _PropertyListScreenState extends State<PropertyListScreen> {
   String _dealFilter = 'all';
   String? _districtFilter;
-  RangeValues _priceRange = const RangeValues(0, 5000000000);
+  RangeValues _priceRange = const RangeValues(0, 40000000000);
   bool _priceFilterActive = false;
 
   @override
@@ -300,7 +300,7 @@ class _PropertyListScreenState extends State<PropertyListScreen> {
                     RangeSlider(
                       values: tempRange,
                       min: 0,
-                      max: 5000000000,
+                      max: 40000000000,
                       divisions: 50,
                       activeColor: AppColors.primaryBlue,
                       inactiveColor:
@@ -327,7 +327,7 @@ class _PropertyListScreenState extends State<PropertyListScreen> {
                                 setState(() {
                                   _priceFilterActive = false;
                                   _priceRange =
-                                      const RangeValues(0, 5000000000);
+                                      const RangeValues(0, 40000000000);
                                 });
                                 Navigator.pop(context);
                               },

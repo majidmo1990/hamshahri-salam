@@ -3,12 +3,14 @@ import '../theme/app_theme.dart';
 
 class ActionCards extends StatelessWidget {
   final VoidCallback onViewProperties;
-  final VoidCallback onAddProperty;
+  final VoidCallback onSell;
+  final VoidCallback onRent;
 
   const ActionCards({
     super.key,
     required this.onViewProperties,
-    required this.onAddProperty,
+    required this.onSell,
+    required this.onRent,
   });
 
   @override
@@ -18,18 +20,27 @@ class ActionCards extends StatelessWidget {
         Expanded(
           child: _ActionCard(
             icon: Icons.search_rounded,
-            label: 'خرید ملک',
+            label: 'خرید',
             filled: true,
             onTap: onViewProperties,
           ),
         ),
-        const SizedBox(width: 12),
+        const SizedBox(width: 10),
         Expanded(
           child: _ActionCard(
-            icon: Icons.add_circle_outline_rounded,
-            label: 'فروش ملک',
+            icon: Icons.sell_outlined,
+            label: 'فروش',
             filled: false,
-            onTap: onAddProperty,
+            onTap: onSell,
+          ),
+        ),
+        const SizedBox(width: 10),
+        Expanded(
+          child: _ActionCard(
+            icon: Icons.home_work_outlined,
+            label: 'اجاره',
+            filled: false,
+            onTap: onRent,
           ),
         ),
       ],
@@ -53,19 +64,16 @@ class _ActionCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-
-    final Color background = filled
+    final background = filled
         ? AppColors.primaryBlue
         : (isDark ? AppColors.darkSurface : Colors.white);
-
-    final Color foreground = filled
-        ? Colors.white
+    final foreground = filled
+        ? Colors.black
         : (isDark ? AppColors.lightBlue : AppColors.primaryBlue);
-
-    final Border? border = filled
+    final border = filled
         ? null
         : Border.all(
-            color: isDark ? AppColors.darkBorder : AppColors.skyBlue,
+            color: isDark ? AppColors.darkGoldBorder : AppColors.skyBlue,
             width: 1.2,
           );
 
@@ -80,19 +88,16 @@ class _ActionCard extends StatelessWidget {
             borderRadius: BorderRadius.circular(16),
             border: border,
           ),
-          padding: const EdgeInsets.symmetric(vertical: 22),
+          padding: const EdgeInsets.symmetric(vertical: 18),
           child: Column(
             children: [
-              Icon(icon, size: 30, color: foreground),
-              const SizedBox(height: 10),
-              Text(
-                label,
-                style: TextStyle(
-                  color: foreground,
-                  fontSize: 14,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
+              Icon(icon, size: 26, color: foreground),
+              const SizedBox(height: 8),
+              Text(label,
+                  style: TextStyle(
+                      color: foreground,
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600)),
             ],
           ),
         ),
