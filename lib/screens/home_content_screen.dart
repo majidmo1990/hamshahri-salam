@@ -7,6 +7,7 @@ import '../widgets/home_slider.dart';
 import '../widgets/action_cards.dart';
 import '../widgets/property_card.dart';
 import 'property_type_screen.dart';
+import 'category_selection_screen.dart';
 import 'property_list_screen.dart';
 import 'search_screen.dart';
 import 'notifications_screen.dart';
@@ -15,9 +16,8 @@ import 'login_screen.dart';
 class HomeContentScreen extends StatelessWidget {
   const HomeContentScreen({super.key});
 
-  Future<void> _onAddPropertyTap(BuildContext context) async {
+  Future<void> _goToCategory(BuildContext context, DealType dealType) async {
     final auth = context.read<AuthProvider>();
-
     if (!auth.isLoggedIn) {
       final ok = await Navigator.of(context).push<bool>(
         MaterialPageRoute(builder: (_) => const LoginScreen()),
@@ -25,10 +25,11 @@ class HomeContentScreen extends StatelessWidget {
       if (ok != true) return;
       if (!context.mounted) return;
     }
-
     if (!context.mounted) return;
     Navigator.of(context).push(
-      MaterialPageRoute(builder: (_) => const PropertyTypeScreen()),
+      MaterialPageRoute(
+        builder: (_) => CategorySelectionScreen(dealType: dealType),
+      ),
     );
   }
 
@@ -53,34 +54,27 @@ class HomeContentScreen extends StatelessWidget {
                 MaterialPageRoute(builder: (_) => const PropertyListScreen()),
               );
             },
-            onAddProperty: () => _onAddPropertyTap(context),
+            onSell: () => _goToCategory(context, DealType.sell),
+            onRent: () => _goToCategory(context, DealType.rent),
           ),
           const SizedBox(height: 24),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(
-                'پربازدیدترین‌ها',
-                style: TextStyle(
-                  fontSize: 15,
-                  fontWeight: FontWeight.w700,
-                  color: isDark ? Colors.white : Colors.black87,
-                ),
-              ),
-              GestureDetector(
-                onTap: () {
-                  Navigator.of(context).push(
-                    MaterialPageRoute(builder: (_) => const PropertyListScreen()),
-                  );
-                },
-                child: const Text(
-                  'مشاهده همه',
+              Text('پربازدیدترین‌ها',
                   style: TextStyle(
-                    fontSize: 12,
-                    color: AppColors.primaryBlue,
-                    fontWeight: FontWeight.w600,
-                  ),
+                      fontSize: 15,
+                      fontWeight: FontWeight.w700,
+                      color: isDark ? Colors.white : Colors.black87)),
+              GestureDetector(
+                onTap: () => Navigator.of(context).push(
+                  MaterialPageRoute(builder: (_) => const PropertyListScreen()),
                 ),
+                child: const Text('مشاهده همه',
+                    style: TextStyle(
+                        fontSize: 12,
+                        color: AppColors.primaryBlue,
+                        fontWeight: FontWeight.w600)),
               ),
             ],
           ),
@@ -89,13 +83,11 @@ class HomeContentScreen extends StatelessWidget {
               ? SizedBox(
                   height: 100,
                   child: Center(
-                    child: Text(
-                      'هنوز ملکی ثبت نشده است',
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: isDark ? Colors.grey[500] : Colors.grey[500],
-                      ),
-                    ),
+                    child: Text('هنوز ملکی ثبت نشده است',
+                        style: TextStyle(
+                            fontSize: 12,
+                            color:
+                                isDark ? Colors.grey[500] : Colors.grey[500])),
                   ),
                 )
               : SizedBox(
@@ -104,9 +96,8 @@ class HomeContentScreen extends StatelessWidget {
                     scrollDirection: Axis.horizontal,
                     itemCount: popular.length,
                     separatorBuilder: (_, __) => const SizedBox(width: 12),
-                    itemBuilder: (context, index) {
-                      return PropertyCard(property: popular[index]);
-                    },
+                    itemBuilder: (context, index) =>
+                        PropertyCard(property: popular[index]),
                   ),
                 ),
         ],
@@ -119,11 +110,9 @@ class HomeContentScreen extends StatelessWidget {
       children: [
         Expanded(
           child: GestureDetector(
-            onTap: () {
-              Navigator.of(context).push(
-                MaterialPageRoute(builder: (_) => const SearchScreen()),
-              );
-            },
+            onTap: () => Navigator.of(context).push(
+              MaterialPageRoute(builder: (_) => const SearchScreen()),
+            ),
             child: Container(
               height: 44,
               padding: const EdgeInsets.symmetric(horizontal: 14),
@@ -134,15 +123,13 @@ class HomeContentScreen extends StatelessWidget {
               child: Row(
                 children: [
                   Icon(Icons.search_rounded,
-                      size: 20, color: isDark ? Colors.grey[400] : Colors.grey[600]),
+                      size: 20,
+                      color: isDark ? Colors.grey[400] : Colors.grey[600]),
                   const SizedBox(width: 8),
-                  Text(
-                    'جستجو در املاک...',
-                    style: TextStyle(
-                      fontSize: 13,
-                      color: isDark ? Colors.grey[400] : Colors.grey[600],
-                    ),
-                  ),
+                  Text('جستجو در املاک...',
+                      style: TextStyle(
+                          fontSize: 13,
+                          color: isDark ? Colors.grey[400] : Colors.grey[600])),
                 ],
               ),
             ),
@@ -150,11 +137,9 @@ class HomeContentScreen extends StatelessWidget {
         ),
         const SizedBox(width: 10),
         GestureDetector(
-          onTap: () {
-            Navigator.of(context).push(
-              MaterialPageRoute(builder: (_) => const NotificationsScreen()),
-            );
-          },
+          onTap: () => Navigator.of(context).push(
+            MaterialPageRoute(builder: (_) => const NotificationsScreen()),
+          ),
           child: Container(
             width: 44,
             height: 44,
@@ -162,10 +147,8 @@ class HomeContentScreen extends StatelessWidget {
               color: isDark ? AppColors.darkSurface : AppColors.skyBlue,
               borderRadius: BorderRadius.circular(12),
             ),
-            child: Icon(
-              Icons.notifications_none_rounded,
-              color: isDark ? Colors.grey[300] : AppColors.primaryBlue,
-            ),
+            child: Icon(Icons.notifications_none_rounded,
+                color: isDark ? Colors.grey[300] : AppColors.primaryBlue),
           ),
         ),
       ],
