@@ -1,3 +1,4 @@
+import 'video_booking_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../theme/app_theme.dart';
@@ -195,6 +196,16 @@ class ProfileScreen extends StatelessWidget {
               onTap: () {
                 Navigator.of(context).push(
                   MaterialPageRoute(builder: (_) => const SupportScreen()),
+                );
+              },
+            ),
+            _menuTile(
+              icon: Icons.videocam_outlined,
+              label: 'رزرو زمان فیلمبرداری',
+              isDark: isDark,
+              onTap: () {
+                Navigator.of(context).push(
+                  MaterialPageRoute(builder: (_) => const VideoBookingScreen()),
                 );
               },
             ),

@@ -240,4 +240,23 @@ class AppData extends ChangeNotifier {
     _favoriteIds.clear();
     notifyListeners();
   }
+
+  final List<Map<String, dynamic>> videoBookings = [];
+
+  void addVideoBooking({
+    required String address,
+    required DateTime date,
+    required TimeOfDay time,
+    required String notes,
+    required String phone,
+  }) {
+    videoBookings.add({
+      'address': address,
+      'date': date,
+      'time': time,
+      'notes': notes,
+      'phone': phone,
+    });
+    notifyListeners();
+  }
 }
