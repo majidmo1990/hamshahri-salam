@@ -18,7 +18,7 @@ class AboutScreen extends StatelessWidget {
             padding: const EdgeInsets.all(20),
             children: [
               Center(
-                child: Image.asset('assets/images/logo.png', width: 130),
+                child: Image.asset('assets/images/logo.jpeg', width: 130),
               ),
               const SizedBox(height: 20),
               Text(

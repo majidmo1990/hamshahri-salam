@@ -59,7 +59,7 @@ class _SplashScreenState extends State<SplashScreen>
 
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       await precacheImage(
-        const AssetImage('assets/images/logo.png'),
+        const AssetImage('assets/images/logo.jpeg'),
         context,
       );
       if (!mounted) return;
@@ -133,7 +133,7 @@ class _SplashScreenState extends State<SplashScreen>
                             );
                           },
                           child: Image.asset(
-                            'assets/images/logo.png',
+                            'assets/images/logo.jpeg',
                             width: 220,
                           ),
                         ),
