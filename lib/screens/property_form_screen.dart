@@ -12,6 +12,7 @@ import 'property_type_screen.dart';
 import 'category_selection_screen.dart';
 import 'main_navigation_screen.dart';
 import 'video_booking_screen.dart';
+import 'video_booking_screen.dart';
 
 class PropertyFormScreen extends StatefulWidget {
   final DealType dealType;
