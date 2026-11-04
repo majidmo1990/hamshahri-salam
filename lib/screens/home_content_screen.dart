@@ -5,42 +5,49 @@ import '../state/app_data.dart';
 import '../providers/auth_provider.dart';
 import '../widgets/home_slider.dart';
 import '../widgets/action_cards.dart';
-import '../widgets/property_card.dart';
+import '../widgets/featured_carousel.dart';
 import 'property_type_screen.dart';
 import 'category_selection_screen.dart';
 import 'property_list_screen.dart';
 import 'search_screen.dart';
 import 'notifications_screen.dart';
 import 'login_screen.dart';
+import 'video_booking_screen.dart';
 
 class HomeContentScreen extends StatelessWidget {
   const HomeContentScreen({super.key});
 
-  Future<void> _goToCategory(BuildContext context, DealType dealType) async {
+  Future<bool> _ensureLogin(BuildContext context) async {
     final auth = context.read<AuthProvider>();
-    if (!auth.isLoggedIn) {
-      final ok = await Navigator.of(context).push<bool>(
-        MaterialPageRoute(builder: (_) => const LoginScreen()),
-      );
-      if (ok != true) return;
-      if (!context.mounted) return;
-    }
+    if (auth.isLoggedIn) return true;
+    final ok = await Navigator.of(context).push<bool>(
+      MaterialPageRoute(builder: (_) => const LoginScreen()),
+    );
+    return ok == true && context.mounted;
+  }
+
+  Future<void> _goToCategory(BuildContext context, DealType dealType) async {
+    if (!await _ensureLogin(context)) return;
     if (!context.mounted) return;
     Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (_) => CategorySelectionScreen(dealType: dealType),
-      ),
+      MaterialPageRoute(builder: (_) => CategorySelectionScreen(dealType: dealType)),
     );
+  }
+
+  Future<void> _openBooking(BuildContext context) async {
+    if (!await _ensureLogin(context)) return;
+    if (!context.mounted) return;
+    Navigator.of(context).push(MaterialPageRoute(builder: (_) => const VideoBookingScreen()));
   }
 
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final listings = context.watch<AppData>().listings;
-    final popular = listings.take(3).toList();
+    final featured = listings.take(6).toList();
 
     return SingleChildScrollView(
-      padding: const EdgeInsets.fromLTRB(16, 12, 16, 20),
+      padding: const EdgeInsets.fromLTRB(16, 12, 16, 100),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
@@ -49,22 +56,22 @@ class HomeContentScreen extends StatelessWidget {
           const HomeSlider(),
           const SizedBox(height: 20),
           ActionCards(
-            onViewProperties: () {
-              Navigator.of(context).push(
-                MaterialPageRoute(builder: (_) => const PropertyListScreen()),
-              );
-            },
+            onViewProperties: () => Navigator.of(context).push(
+              MaterialPageRoute(builder: (_) => const PropertyListScreen()),
+            ),
             onSell: () => _goToCategory(context, DealType.sell),
             onRent: () => _goToCategory(context, DealType.rent),
           ),
+          const SizedBox(height: 16),
+          _bookingBanner(context, isDark),
           const SizedBox(height: 24),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text('پربازدیدترین‌ها',
+              Text('ملک‌های ویژه',
                   style: TextStyle(
-                      fontSize: 15,
-                      fontWeight: FontWeight.w700,
+                      fontSize: 16,
+                      fontWeight: FontWeight.w800,
                       color: isDark ? Colors.white : Colors.black87)),
               GestureDetector(
                 onTap: () => Navigator.of(context).push(
@@ -72,35 +79,71 @@ class HomeContentScreen extends StatelessWidget {
                 ),
                 child: const Text('مشاهده همه',
                     style: TextStyle(
-                        fontSize: 12,
-                        color: AppColors.primaryBlue,
-                        fontWeight: FontWeight.w600)),
+                        fontSize: 12, color: AppColors.primaryBlue, fontWeight: FontWeight.w600)),
               ),
             ],
           ),
           const SizedBox(height: 12),
-          popular.isEmpty
+          featured.isEmpty
               ? SizedBox(
                   height: 100,
                   child: Center(
                     child: Text('هنوز ملکی ثبت نشده است',
-                        style: TextStyle(
-                            fontSize: 12,
-                            color:
-                                isDark ? Colors.grey[500] : Colors.grey[500])),
+                        style: TextStyle(fontSize: 12, color: Colors.grey[500])),
                   ),
                 )
-              : SizedBox(
-                  height: 210,
-                  child: ListView.separated(
-                    scrollDirection: Axis.horizontal,
-                    itemCount: popular.length,
-                    separatorBuilder: (_, __) => const SizedBox(width: 12),
-                    itemBuilder: (context, index) =>
-                        PropertyCard(property: popular[index]),
-                  ),
-                ),
+              : FeaturedCarousel(items: featured),
         ],
+      ),
+    );
+  }
+
+  Widget _bookingBanner(BuildContext context, bool isDark) {
+    return GestureDetector(
+      onTap: () => _openBooking(context),
+      child: Container(
+        padding: const EdgeInsets.all(14),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(18),
+          gradient: LinearGradient(
+            begin: Alignment.centerRight,
+            end: Alignment.centerLeft,
+            colors: isDark
+                ? [AppColors.goldDark.withValues(alpha: 0.55), AppColors.darkSurface]
+                : [AppColors.goldHighlight, AppColors.skyBlue],
+          ),
+          border: Border.all(color: AppColors.goldLight.withValues(alpha: 0.5)),
+        ),
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                color: AppColors.goldLight.withValues(alpha: 0.25),
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(Icons.videocam_rounded, color: AppColors.goldLight, size: 24),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text('فیلمبرداری حرفه‌ای از ملک شما',
+                      style: TextStyle(
+                          fontSize: 13.5,
+                          fontWeight: FontWeight.w800,
+                          color: isDark ? Colors.white : Colors.black87)),
+                  const SizedBox(height: 3),
+                  Text('زمان رزرو کنید، ما برایتان فیلم می‌گیریم',
+                      style: TextStyle(
+                          fontSize: 11.5, color: isDark ? Colors.grey[300] : Colors.black54)),
+                ],
+              ),
+            ),
+            Icon(Icons.chevron_left_rounded, color: isDark ? Colors.white70 : Colors.black54),
+          ],
+        ),
       ),
     );
   }
@@ -123,13 +166,11 @@ class HomeContentScreen extends StatelessWidget {
               child: Row(
                 children: [
                   Icon(Icons.search_rounded,
-                      size: 20,
-                      color: isDark ? Colors.grey[400] : Colors.grey[600]),
+                      size: 20, color: isDark ? Colors.grey[400] : Colors.grey[600]),
                   const SizedBox(width: 8),
                   Text('جستجو در املاک...',
                       style: TextStyle(
-                          fontSize: 13,
-                          color: isDark ? Colors.grey[400] : Colors.grey[600])),
+                          fontSize: 13, color: isDark ? Colors.grey[400] : Colors.grey[600])),
                 ],
               ),
             ),

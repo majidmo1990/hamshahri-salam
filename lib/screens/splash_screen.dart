@@ -57,15 +57,7 @@ class _SplashScreenState extends State<SplashScreen>
       ),
     );
 
-    WidgetsBinding.instance.addPostFrameCallback((_) async {
-      await precacheImage(
-        const AssetImage('assets/images/logo.jpeg'),
-        context,
-      );
-      if (!mounted) return;
-      setState(() => _imageReady = true);
-      _controller.forward();
-    });
+    _controller.forward();
 
     Future.delayed(const Duration(milliseconds: 3500), () {
       if (mounted) {
@@ -117,7 +109,7 @@ class _SplashScreenState extends State<SplashScreen>
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
                       Opacity(
-                        opacity: _imageReady ? 1 : 0,
+                        opacity: 1,
                         child: AnimatedBuilder(
                           animation: _controller,
                           builder: (context, child) {

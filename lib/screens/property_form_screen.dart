@@ -11,6 +11,7 @@ import '../widgets/media_upload_step.dart';
 import 'property_type_screen.dart';
 import 'category_selection_screen.dart';
 import 'main_navigation_screen.dart';
+import 'video_booking_screen.dart';
 
 class PropertyFormScreen extends StatefulWidget {
   final DealType dealType;
@@ -179,7 +180,33 @@ class _PropertyFormScreenState extends State<PropertyFormScreen> {
                   textAlign: TextAlign.center,
                   style: TextStyle(fontSize: 12.5, color: isDark ? Colors.grey[400] : Colors.grey[600]),
                 ),
-                const SizedBox(height: 22),
+                const SizedBox(height: 14),
+                Text('با ویدیوی حرفه‌ای، آگهی‌تان بیشتر دیده می‌شود.',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(fontSize: 11.5, color: isDark ? Colors.grey[400] : Colors.grey[600])),
+                const SizedBox(height: 8),
+                SizedBox(
+                  width: double.infinity,
+                  height: 46,
+                  child: OutlinedButton.icon(
+                    style: OutlinedButton.styleFrom(
+                      side: const BorderSide(color: AppColors.primaryBlue),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    ),
+                    onPressed: () {
+                      final nav = Navigator.of(context);
+                      nav.pushAndRemoveUntil(
+                        MaterialPageRoute(builder: (_) => const MainNavigationScreen()),
+                        (route) => false,
+                      );
+                      nav.push(MaterialPageRoute(builder: (_) => const VideoBookingScreen()));
+                    },
+                    icon: const Icon(Icons.videocam_outlined, color: AppColors.primaryBlue, size: 18),
+                    label: const Text('رزرو فیلمبرداری حرفه‌ای ملک',
+                        style: TextStyle(color: AppColors.primaryBlue, fontSize: 12.5)),
+                  ),
+                ),
+                const SizedBox(height: 10),
                 SizedBox(
                   width: double.infinity,
                   height: 46,
