@@ -30,7 +30,7 @@ dev_dependencies:
 flutter:
   uses-material-design: true
   assets:
-    - assets/images/logo.jpeg
+    - assets/images/logo.png
     - assets/images/slider1.jpg
     - assets/images/slider2.jpg
     - assets/images/slider3.jpg
@@ -49,4 +49,4 @@ flutter:
 flutter_launcher_icons:
   android: true
   ios: false
-  image_path: "assets/images/logo.jpeg"
+  image_path: "assets/images/logo.png"
