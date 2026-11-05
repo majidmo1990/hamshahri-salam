@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 import '../theme/app_theme.dart';
-import '../state/app_data.dart';
-import '../providers/auth_provider.dart';
+import '../services/api_service.dart';
 
 class VideoBookingScreen extends StatefulWidget {
   const VideoBookingScreen({super.key});
@@ -17,6 +15,7 @@ class _VideoBookingScreenState extends State<VideoBookingScreen> {
   DateTime? _date;
   TimeOfDay? _time;
   bool _submitted = false;
+  bool _sending = false;
 
   @override
   void dispose() {
@@ -43,22 +42,34 @@ class _VideoBookingScreenState extends State<VideoBookingScreen> {
     if (picked != null) setState(() => _time = picked);
   }
 
-  void _submit() {
-    final phone = context.read<AuthProvider>().phone ?? '';
+  Future<void> _submit() async {
+    if (_sending) return;
     if (_addressController.text.trim().isEmpty || _date == null || _time == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('آدرس، تاریخ و ساعت را وارد کنید')),
       );
       return;
     }
-    context.read<AppData>().addVideoBooking(
-          address: _addressController.text.trim(),
-          date: _date!,
-          time: _time!,
-          notes: _notesController.text.trim(),
-          phone: phone,
-        );
-    setState(() => _submitted = true);
+    _sending = true;
+    try {
+      final d = _date!;
+      final t = _time!;
+      await ApiService().createVideoBooking(
+        address: _addressController.text.trim(),
+        date: '${d.year}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}',
+        time: '${t.hour.toString().padLeft(2, '0')}:${t.minute.toString().padLeft(2, '0')}',
+        notes: _notesController.text.trim(),
+      );
+      if (!mounted) return;
+      setState(() => _submitted = true);
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('ثبت درخواست ناموفق بود. دوباره تلاش کنید.')),
+      );
+    } finally {
+      _sending = false;
+    }
   }
 
   @override

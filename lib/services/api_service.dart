@@ -342,4 +342,19 @@ class ApiService {
     }
     return 'خطای ناشناخته: ${e.message}';
   }
+
+  Future<void> createVideoBooking({
+    required String address,
+    required String date,
+    required String time,
+    String notes = '',
+  }) async {
+    await init();
+    await _dio.post('/api/video-bookings', data: {
+      'address': address,
+      'date': date,
+      'time': time,
+      'notes': notes,
+    });
+  }
 }
