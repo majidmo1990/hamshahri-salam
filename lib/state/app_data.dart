@@ -165,8 +165,9 @@ class AppData extends ChangeNotifier {
     try {
       final json = await _api.createProperty(data);
       final listing = PropertyListing.fromJson(json);
-      _listings.insert(0, listing);
-      notifyListeners();
+      // ⚠️ آگهی جدید pending هست، نباید به لیست عمومی اضافه بشه
+      // _listings.insert(0, listing);
+      // notifyListeners();
       return listing;
     } catch (e) {
       _error = e.toString();

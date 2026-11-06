@@ -177,9 +177,11 @@ class _PropertyFormScreenState extends State<PropertyFormScreen> {
                     style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700, color: isDark ? Colors.white : Colors.black87)),
                 const SizedBox(height: 8),
                 Text(
-                  'آگهی شما در حال بررسی توسط مدیریت است و پس از تایید، در لیست ملک‌های قابل مشاهده قرار می‌گیرد.',
+                  '⏳ وضعیت: در انتظار تایید مدیر\n\n'
+                  'آگهی شما پس از تایید توسط مدیر، در برنامه نمایش داده خواهد شد.\n'
+                  'این فرآیند معمولاً کمتر از ۲۴ ساعت طول می‌کشد.',
                   textAlign: TextAlign.center,
-                  style: TextStyle(fontSize: 12.5, color: isDark ? Colors.grey[400] : Colors.grey[600]),
+                  style: TextStyle(fontSize: 12.5, color: isDark ? Colors.grey[400] : Colors.grey[600], height: 1.6),
                 ),
                 const SizedBox(height: 14),
                 Text('با ویدیوی حرفه‌ای، آگهی‌تان بیشتر دیده می‌شود.',
