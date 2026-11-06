@@ -67,8 +67,9 @@ class _SplashScreenState extends State<SplashScreen>
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Image.asset(
-                      'assets/images/logo_gold.png',
+                      'assets/images/logo.png',
                       width: 280,
+		      filterQuality: FilterQuality.high, // <--- این خط رو اضافه کن	
                       errorBuilder: (_, __, ___) => const Text(
                         'همشهری سلام',
                         style: TextStyle(
