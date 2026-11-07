@@ -6,6 +6,7 @@ import '../state/app_data.dart';
 import '../state/districts.dart';
 import '../providers/auth_provider.dart';
 import '../services/api_service.dart';
+import '../utils/price_formatter.dart';
 import '../widgets/property_details_step.dart';
 import '../widgets/media_upload_step.dart';
 import 'property_type_screen.dart';
@@ -38,10 +39,44 @@ class _PropertyFormScreenState extends State<PropertyFormScreen> {
   final _depositController = TextEditingController();
   final _rentController = TextEditingController();
 
+  final List<String> _uploadedImages = [];
   String? _selectedDistrict;
 
   bool get _isVilla => widget.category.id == 'villa';
   bool get _isApartment => widget.category.id == 'apartment';
+  bool get _isRent => widget.dealType == DealType.rent;
+
+  // اعتبارسنجی مرحله ۱
+  bool get _isStep1Valid {
+    // عنوان
+    if (_titleController.text.trim().isEmpty) return false;
+    
+    // محدوده
+    if (_selectedDistrict == null || _selectedDistrict!.isEmpty) return false;
+    
+    // موقعیت
+    if (_locationController.text.trim().isEmpty) return false;
+    
+    // متراژ
+    if (_isVilla) {
+      if (_landAreaController.text.trim().isEmpty) return false;
+      if (_buildAreaController.text.trim().isEmpty) return false;
+    } else if (_isApartment) {
+      if (_buildAreaController.text.trim().isEmpty) return false;
+    } else {
+      if (_landAreaController.text.trim().isEmpty) return false;
+    }
+    
+    // قیمت
+    if (_isRent) {
+      if (_depositController.text.trim().isEmpty) return false;
+      if (_rentController.text.trim().isEmpty) return false;
+    } else {
+      if (_priceController.text.trim().isEmpty) return false;
+    }
+    
+    return true;
+  }
 
   @override
   void dispose() {
@@ -96,7 +131,7 @@ class _PropertyFormScreenState extends State<PropertyFormScreen> {
     );
   }
 
-  Future<void> _submitProperty(List<String> images, String? video) async {
+  Future<void> _submitProperty(List<String> images) async {
     if (!mounted) return;
 
     final api = ApiService();
@@ -109,14 +144,6 @@ class _PropertyFormScreenState extends State<PropertyFormScreen> {
         if (await file.exists()) {
           final relPath = await api.uploadImage(file);
           uploadedImagePaths.add(relPath);
-        }
-      }
-
-      String? uploadedVideoPath;
-      if (video != null) {
-        final videoFile = File(video);
-        if (await videoFile.exists()) {
-          uploadedVideoPath = await api.uploadVideo(videoFile);
         }
       }
 
@@ -134,10 +161,14 @@ class _PropertyFormScreenState extends State<PropertyFormScreen> {
         'details': Map<String, dynamic>.from(formData),
         'description': formData['formData_description'] as String? ?? '',
         'image_paths': uploadedImagePaths,
-        'video_path': uploadedVideoPath,
+        // 'video_path': uploadedVideoPath,  // ویدیو غیرفعال شد
         'seller_phone': sellerPhone,
       };
 
+      // ذخیره عکس‌های آپلودشده برای حفظ بین مراحل
+      _uploadedImages.clear();
+      _uploadedImages.addAll(images);
+      
       final appData = Provider.of<AppData>(context, listen: false);
       final listing = await appData.addListing(data);
 
@@ -259,7 +290,11 @@ class _PropertyFormScreenState extends State<PropertyFormScreen> {
                       onNext: () => _goToStep(2),
                       onBack: () => _goToStep(0),
                     ),
-                    MediaUploadStep(onBack: () => _goToStep(1), onSubmit: _submitProperty),
+                    MediaUploadStep(
+                      onBack: () => _goToStep(1),
+                      onSubmit: (images) => _submitProperty(images),
+                      initialImages: _uploadedImages,
+                    ),
                   ],
                 ),
               ),
@@ -341,18 +376,24 @@ class _PropertyFormScreenState extends State<PropertyFormScreen> {
           const SizedBox(height: 16),
           if (isRent) ...[
             _fieldLabel('ودیعه / رهن (تومان)', isDark),
-            _textField(_depositController, 'وارد کنید', isNumber: true),
+            _textField(_depositController, 'وارد کنید', isNumber: true, isPrice: true),
             const SizedBox(height: 16),
             _fieldLabel('اجاره ماهانه (تومان)', isDark),
-            _textField(_rentController, 'وارد کنید', isNumber: true),
+            _textField(_rentController, 'وارد کنید', isNumber: true, isPrice: true),
           ] else ...[
             _fieldLabel('قیمت (تومان)', isDark),
-            _textField(_priceController, 'وارد کنید', isNumber: true),
+            _textField(_priceController, 'وارد کنید', isNumber: true, isPrice: true),
           ],
           const SizedBox(height: 28),
           SizedBox(
             height: 50,
-            child: ElevatedButton(onPressed: () => _goToStep(1), child: const Text('بعدی')),
+            child: ElevatedButton(
+              onPressed: _isStep1Valid ? () => _goToStep(1) : null,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: _isStep1Valid ? null : Colors.grey[400],
+              ),
+              child: const Text('بعدی'),
+            ),
           ),
           const SizedBox(height: 24),
         ],
@@ -427,12 +468,14 @@ class _PropertyFormScreenState extends State<PropertyFormScreen> {
     );
   }
 
-  Widget _textField(TextEditingController controller, String hint, {bool isNumber = false}) {
+  Widget _textField(TextEditingController controller, String hint, {bool isNumber = false, bool isPrice = false}) {
     return Builder(builder: (context) {
       final isDark = Theme.of(context).brightness == Brightness.dark;
       return TextField(
         controller: controller,
         keyboardType: isNumber ? TextInputType.number : TextInputType.text,
+        inputFormatters: isPrice ? [PriceInputFormatter()] : null,
+        onChanged: (_) => setState(() {}),
         style: TextStyle(color: isDark ? Colors.white : Colors.black87),
         decoration: InputDecoration(
           hintText: hint,

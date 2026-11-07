@@ -13,9 +13,15 @@ class _VideoBookingScreenState extends State<VideoBookingScreen> {
   final _addressController = TextEditingController();
   final _notesController = TextEditingController();
   DateTime? _date;
-  TimeOfDay? _time;
+  String? _time;  // ← String به جای TimeOfDay
   bool _submitted = false;
   bool _sending = false;
+
+  // ساعت‌های مجاز
+  static const List<String> _allowedTimes = [
+    '09:00', '10:00', '11:00',
+    '14:00', '15:00', '16:00',
+  ];
 
   @override
   void dispose() {
@@ -35,11 +41,88 @@ class _VideoBookingScreenState extends State<VideoBookingScreen> {
   }
 
   Future<void> _pickTime() async {
-    final picked = await showTimePicker(
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    
+    final result = await showModalBottomSheet<String>(
       context: context,
-      initialTime: const TimeOfDay(hour: 10, minute: 0),
+      backgroundColor: isDark ? AppColors.darkSurface : Colors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (ctx) {
+        return SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.all(20),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // Title
+                Text(
+                  'ساعت مورد نظر را انتخاب کنید',
+                  style: TextStyle(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w700,
+                    color: isDark ? Colors.white : Colors.black87,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  'ساعت‌های کاری: ۹ تا ۱۱ و ۱۴ تا ۱۶',
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: isDark ? Colors.grey[400] : Colors.grey[600],
+                  ),
+                ),
+                const SizedBox(height: 20),
+                
+                // Time slots
+                Wrap(
+                  spacing: 10,
+                  runSpacing: 10,
+                  children: _allowedTimes.map((time) {
+                    final selected = _time == time;
+                    return InkWell(
+                      onTap: () => Navigator.pop(ctx, time),
+                      borderRadius: BorderRadius.circular(12),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 22,
+                          vertical: 14,
+                        ),
+                        decoration: BoxDecoration(
+                          color: selected
+                              ? AppColors.primaryBlue
+                              : (isDark ? AppColors.darkBg : Colors.grey[100]),
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(
+                            color: selected
+                                ? AppColors.primaryBlue
+                                : (isDark ? AppColors.darkBorder : Colors.grey[300]!),
+                          ),
+                        ),
+                        child: Text(
+                          time,
+                          style: TextStyle(
+                            fontSize: 15,
+                            fontWeight: FontWeight.w700,
+                            color: selected ? Colors.white : (isDark ? Colors.white : Colors.black87),
+                          ),
+                        ),
+                      ),
+                    );
+                  }).toList(),
+                ),
+                const SizedBox(height: 10),
+              ],
+            ),
+          ),
+        );
+      },
     );
-    if (picked != null) setState(() => _time = picked);
+
+    if (result != null) {
+      setState(() => _time = result);
+    }
   }
 
   Future<void> _submit() async {
@@ -53,11 +136,10 @@ class _VideoBookingScreenState extends State<VideoBookingScreen> {
     _sending = true;
     try {
       final d = _date!;
-      final t = _time!;
       await ApiService().createVideoBooking(
         address: _addressController.text.trim(),
         date: '${d.year}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}',
-        time: '${t.hour.toString().padLeft(2, '0')}:${t.minute.toString().padLeft(2, '0')}',
+        time: _time!,  // ← String
         notes: _notesController.text.trim(),
       );
       if (!mounted) return;
@@ -121,9 +203,7 @@ class _VideoBookingScreenState extends State<VideoBookingScreen> {
     final dateText = _date == null
         ? 'انتخاب تاریخ'
         : '${_date!.year}/${_date!.month.toString().padLeft(2, '0')}/${_date!.day.toString().padLeft(2, '0')}';
-    final timeText = _time == null
-        ? 'انتخاب ساعت'
-        : '${_time!.hour.toString().padLeft(2, '0')}:${_time!.minute.toString().padLeft(2, '0')}';
+    final timeText = _time ?? 'انتخاب ساعت';
 
     return ListView(
       padding: const EdgeInsets.all(20),
@@ -140,6 +220,11 @@ class _VideoBookingScreenState extends State<VideoBookingScreen> {
         const SizedBox(height: 16),
         _label('ساعت', isDark),
         _picker(timeText, Icons.access_time_rounded, _pickTime, isDark, _time != null),
+        const SizedBox(height: 4),
+        Text('ساعت‌های کاری: ۹ تا ۱۱ و ۱۴ تا ۱۶',
+            style: TextStyle(
+                fontSize: 11.5,
+                color: isDark ? Colors.grey[500] : Colors.grey[500])),
         const SizedBox(height: 16),
         _label('توضیحات (اختیاری)', isDark),
         _field(_notesController, 'مثلاً: ملک ساکن دارد، ورودی از کوچه‌ی فرعی', isDark, lines: 3),
@@ -147,9 +232,16 @@ class _VideoBookingScreenState extends State<VideoBookingScreen> {
         SizedBox(
           height: 52,
           child: ElevatedButton.icon(
-            onPressed: _submit,
-            icon: const Icon(Icons.videocam_rounded),
-            label: const Text('ثبت درخواست', style: TextStyle(fontSize: 15)),
+            onPressed: _sending ? null : _submit,
+            icon: _sending
+                ? const SizedBox(
+                    width: 20,
+                    height: 20,
+                    child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                  )
+                : const Icon(Icons.videocam_rounded),
+            label: Text(_sending ? 'در حال ثبت...' : 'ثبت درخواست',
+                style: const TextStyle(fontSize: 15)),
           ),
         ),
       ],

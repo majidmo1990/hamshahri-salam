@@ -25,6 +25,36 @@ class PropertyDetailsStep extends StatefulWidget {
 
 class _PropertyDetailsStepState extends State<PropertyDetailsStep> {
   bool get _isRent => widget.dealType == DealType.rent;
+  
+  // Controllers برای حفظ داده
+  late final Map<String, TextEditingController> _controllers;
+
+  @override
+  void initState() {
+    super.initState();
+    _controllers = {
+      'formData_buildYear': TextEditingController(
+        text: widget.formData['formData_buildYear']?.toString() ?? '',
+      ),
+      'formData_floor': TextEditingController(
+        text: widget.formData['formData_floor']?.toString() ?? '',
+      ),
+      'formData_unitsPerFloor': TextEditingController(
+        text: widget.formData['formData_unitsPerFloor']?.toString() ?? '',
+      ),
+      'formData_description': TextEditingController(
+        text: widget.formData['formData_description']?.toString() ?? '',
+      ),
+    };
+  }
+
+  @override
+  void dispose() {
+    for (final c in _controllers.values) {
+      c.dispose();
+    }
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -59,7 +89,10 @@ class _PropertyDetailsStepState extends State<PropertyDetailsStep> {
               Expanded(
                 child: SizedBox(
                   height: 50,
-                  child: ElevatedButton(onPressed: widget.onNext, child: const Text('بعدی')),
+                  child: ElevatedButton(
+                    onPressed: widget.onNext,
+                    child: const Text('بعدی'),
+                  ),
                 ),
               ),
             ],
@@ -188,7 +221,10 @@ class _PropertyDetailsStepState extends State<PropertyDetailsStep> {
   Widget _textField(String key, String hint, {bool isNumber = false}) {
     return Builder(builder: (context) {
       final isDark = Theme.of(context).brightness == Brightness.dark;
+      final controller = _controllers[key] ?? TextEditingController();
+      
       return TextField(
+        controller: controller,
         keyboardType: isNumber ? TextInputType.number : TextInputType.text,
         onChanged: (value) => widget.formData[key] = value,
         style: TextStyle(color: isDark ? Colors.white : Colors.black87),
@@ -198,7 +234,9 @@ class _PropertyDetailsStepState extends State<PropertyDetailsStep> {
   }
 
   Widget _textArea(bool isDark) {
+    final controller = _controllers['formData_description'] ?? TextEditingController();
     return TextField(
+      controller: controller,
       maxLines: 3,
       onChanged: (value) => widget.formData['formData_description'] = value,
       style: TextStyle(color: isDark ? Colors.white : Colors.black87),

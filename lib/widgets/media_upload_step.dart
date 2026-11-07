@@ -5,12 +5,14 @@ import '../theme/app_theme.dart';
 
 class MediaUploadStep extends StatefulWidget {
   final VoidCallback onBack;
-  final void Function(List<String> images, String? video) onSubmit;
+  final void Function(List<String> images) onSubmit;
+  final List<String>? initialImages;
 
   const MediaUploadStep({
     super.key,
     required this.onBack,
     required this.onSubmit,
+    this.initialImages,
   });
 
   @override
@@ -20,50 +22,71 @@ class MediaUploadStep extends StatefulWidget {
 class _MediaUploadStepState extends State<MediaUploadStep> {
   final ImagePicker _picker = ImagePicker();
   final List<File> _images = [];
-  File? _video;
-  String? _videoWarning;
   bool _isSubmitting = false;
 
-  static const int maxVideoSizeBytes = 30 * 1024 * 1024; // 30 مگابایت
+  static const int maxImages = 7;
 
-  Future<void> _pickImage(ImageSource source) async {
-    final picked = await _picker.pickImage(source: source, imageQuality: 85);
+  @override
+  void initState() {
+    super.initState();
+    // بارگذاری عکس‌های قبلی (اگه برگشتیم)
+    if (widget.initialImages != null) {
+      _images.addAll(widget.initialImages!.map((p) => File(p)));
+    }
+  }
+
+  Future<void> _pickImagesFromGallery() async {
+    if (_images.length >= maxImages) {
+      _showError('حداکثر $maxImages عکس می‌توانید انتخاب کنید');
+      return;
+    }
+
+    final remaining = maxImages - _images.length;
+    final picked = await _picker.pickMultiImage(imageQuality: 85);
+    
+    if (picked.isEmpty) return;
+
+    // محدود کردن به تعداد باقی‌مانده
+    final toAdd = picked.take(remaining).toList();
+    
+    if (picked.length > remaining) {
+      _showError('فقط $remaining عکس دیگر می‌توانید اضافه کنید');
+    }
+
+    setState(() {
+      _images.addAll(toAdd.map((p) => File(p.path)));
+    });
+  }
+
+  Future<void> _pickImageFromCamera() async {
+    if (_images.length >= maxImages) {
+      _showError('حداکثر $maxImages عکس می‌توانید انتخاب کنید');
+      return;
+    }
+
+    final picked = await _picker.pickImage(
+      source: ImageSource.camera,
+      imageQuality: 85,
+    );
     if (picked != null) {
       setState(() => _images.add(File(picked.path)));
     }
   }
 
-  Future<void> _pickVideo(ImageSource source) async {
-    final picked = await _picker.pickVideo(
-      source: source,
-      maxDuration: const Duration(seconds: 60),
+  void _showError(String msg) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(msg, style: const TextStyle(color: Colors.white)),
+        backgroundColor: Colors.redAccent,
+      ),
     );
-    if (picked == null) return;
-
-    final file = File(picked.path);
-    final sizeBytes = await file.length();
-
-    setState(() {
-      _video = file;
-      _videoWarning = sizeBytes > maxVideoSizeBytes
-          ? 'حجم ویدیو ${(sizeBytes / (1024 * 1024)).toStringAsFixed(1)} مگابایت است. لطفاً ویدیویی با حجم کمتر از ۳۰ مگابایت انتخاب کنید یا با کیفیت پایین‌تر دوباره فیلمبرداری کنید.'
-          : null;
-    });
   }
 
   void _removeImage(int index) {
     setState(() => _images.removeAt(index));
   }
 
-  void _removeVideo() {
-    setState(() {
-      _video = null;
-      _videoWarning = null;
-    });
-  }
-
-  bool get _canSubmit =>
-      _images.isNotEmpty && _video != null && _videoWarning == null;
+  bool get _canSubmit => _images.isNotEmpty;
 
   @override
   Widget build(BuildContext context) {
@@ -75,47 +98,42 @@ class _MediaUploadStepState extends State<MediaUploadStep> {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           _sectionLabel('تصاویر ملک', isDark),
-          const SizedBox(height: 10),
-          _buildImageGrid(isDark),
-          const SizedBox(height: 24),
-          _sectionLabel('ویدیوی ملک', isDark),
           const SizedBox(height: 4),
           Text(
-            'ویدیو الزامی است. حداکثر مدت: ۱ دقیقه — حداکثر حجم: ۳۰ مگابایت',
+            'حداقل ۱ و حداکثر $maxImages عکس — برای نتیجه بهتر، از زوایای مختلف عکس بگیرید',
             style: TextStyle(
               fontSize: 11.5,
               color: isDark ? Colors.grey[400] : Colors.grey[600],
             ),
           ),
           const SizedBox(height: 10),
-          _buildVideoArea(isDark),
-          if (_videoWarning != null) ...[
-            const SizedBox(height: 10),
+          _buildImageGrid(isDark),
+          const SizedBox(height: 24),
+          if (_images.isEmpty)
             Container(
-              padding: const EdgeInsets.all(12),
+              padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: Colors.red.withValues(alpha: 0.08),
+                color: Colors.orange.withValues(alpha: 0.08),
                 borderRadius: BorderRadius.circular(10),
-                border: Border.all(color: Colors.red.withValues(alpha: 0.3)),
+                border: Border.all(color: Colors.orange.withValues(alpha: 0.3)),
               ),
               child: Row(
                 children: [
-                  const Icon(Icons.warning_amber_rounded,
-                      color: Colors.redAccent, size: 18),
+                  const Icon(Icons.info_outline_rounded,
+                      color: Colors.orange, size: 18),
                   const SizedBox(width: 8),
                   Expanded(
                     child: Text(
-                      _videoWarning!,
-                      style: const TextStyle(
+                      'آگهی بدون عکس تایید نمی‌شود. لطفاً حداقل یک عکس اضافه کنید.',
+                      style: TextStyle(
                         fontSize: 11.5,
-                        color: Colors.redAccent,
+                        color: isDark ? Colors.grey[300] : Colors.grey[700],
                       ),
                     ),
                   ),
                 ],
               ),
             ),
-          ],
           const SizedBox(height: 28),
           Row(
             children: [
@@ -129,7 +147,7 @@ class _MediaUploadStepState extends State<MediaUploadStep> {
                         borderRadius: BorderRadius.circular(12),
                       ),
                     ),
-                    onPressed: widget.onBack,
+                    onPressed: _isSubmitting ? null : widget.onBack,
                     child: const Text(
                       'قبلی',
                       style: TextStyle(color: AppColors.primaryBlue),
@@ -153,7 +171,7 @@ class _MediaUploadStepState extends State<MediaUploadStep> {
                     onPressed: _canSubmit && !_isSubmitting
                         ? () {
                             setState(() => _isSubmitting = true);
-                            widget.onSubmit(_images.map((f) => f.path).toList(), _video?.path);
+                            widget.onSubmit(_images.map((f) => f.path).toList());
                           }
                         : null,
                     child: _isSubmitting
@@ -226,60 +244,38 @@ class _MediaUploadStepState extends State<MediaUploadStep> {
                   ),
                 ),
               ),
+              // شماره عکس
+              Positioned(
+                bottom: 4,
+                right: 4,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: 6, vertical: 2),
+                  decoration: BoxDecoration(
+                    color: Colors.black54,
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Text(
+                    '${index + 1}',
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 11,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+              ),
             ],
           );
         }),
-        _addTile(
-          isDark,
-          icon: Icons.add_photo_alternate_outlined,
-          onTap: () => _showImageSourceSheet(isDark),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildVideoArea(bool isDark) {
-    if (_video != null) {
-      return Container(
-        padding: const EdgeInsets.all(12),
-        decoration: BoxDecoration(
-          color: isDark ? AppColors.darkSurface : Colors.white,
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(
-            color: isDark ? AppColors.darkBorder : AppColors.skyBlue,
+        if (_images.length < maxImages)
+          _addTile(
+            isDark,
+            icon: Icons.add_photo_alternate_outlined,
+            label: 'افزودن (${_images.length}/$maxImages)',
+            onTap: () => _showImageSourceSheet(isDark),
           ),
-        ),
-        child: Row(
-          children: [
-            Icon(Icons.videocam_rounded, color: AppColors.primaryBlue),
-            const SizedBox(width: 10),
-            Expanded(
-              child: Text(
-                _video!.path.split('/').last,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: TextStyle(
-                  fontSize: 12.5,
-                  color: isDark ? Colors.white : Colors.black87,
-                ),
-              ),
-            ),
-            IconButton(
-              icon: const Icon(Icons.close, size: 18),
-              color: isDark ? Colors.grey[400] : Colors.grey[600],
-              onPressed: _removeVideo,
-            ),
-          ],
-        ),
-      );
-    }
-
-    return _addTile(
-      isDark,
-      icon: Icons.videocam_outlined,
-      label: 'افزودن ویدیو',
-      fullWidth: true,
-      onTap: () => _showVideoSourceSheet(isDark),
+      ],
     );
   }
 
@@ -288,14 +284,13 @@ class _MediaUploadStepState extends State<MediaUploadStep> {
     required IconData icon,
     required VoidCallback onTap,
     String? label,
-    bool fullWidth = false,
   }) {
     return InkWell(
       borderRadius: BorderRadius.circular(12),
       onTap: onTap,
       child: Container(
-        width: fullWidth ? double.infinity : 90,
-        height: fullWidth ? 60 : 90,
+        width: 90,
+        height: 90,
         decoration: BoxDecoration(
           color: isDark ? AppColors.darkSurface : Colors.white,
           borderRadius: BorderRadius.circular(12),
@@ -307,15 +302,16 @@ class _MediaUploadStepState extends State<MediaUploadStep> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(icon, color: AppColors.primaryBlue, size: fullWidth ? 22 : 26),
+            Icon(icon, color: AppColors.primaryBlue, size: 26),
             if (label != null) ...[
               const SizedBox(height: 4),
               Text(
                 label,
                 style: TextStyle(
-                  fontSize: 12,
+                  fontSize: 10,
                   color: isDark ? Colors.white70 : Colors.black87,
                 ),
+                textAlign: TextAlign.center,
               ),
             ],
           ],
@@ -325,26 +321,6 @@ class _MediaUploadStepState extends State<MediaUploadStep> {
   }
 
   void _showImageSourceSheet(bool isDark) {
-    _showSourceSheet(
-      isDark: isDark,
-      onCamera: () => _pickImage(ImageSource.camera),
-      onGallery: () => _pickImage(ImageSource.gallery),
-    );
-  }
-
-  void _showVideoSourceSheet(bool isDark) {
-    _showSourceSheet(
-      isDark: isDark,
-      onCamera: () => _pickVideo(ImageSource.camera),
-      onGallery: () => _pickVideo(ImageSource.gallery),
-    );
-  }
-
-  void _showSourceSheet({
-    required bool isDark,
-    required VoidCallback onCamera,
-    required VoidCallback onGallery,
-  }) {
     showModalBottomSheet(
       context: context,
       backgroundColor: isDark ? AppColors.darkSurface : Colors.white,
@@ -362,16 +338,20 @@ class _MediaUploadStepState extends State<MediaUploadStep> {
                 title: const Text('گرفتن با دوربین', textAlign: TextAlign.right),
                 onTap: () {
                   Navigator.pop(context);
-                  onCamera();
+                  _pickImageFromCamera();
                 },
               ),
               ListTile(
                 leading: const Icon(Icons.photo_library_outlined,
                     color: AppColors.primaryBlue),
-                title: const Text('انتخاب از گالری', textAlign: TextAlign.right),
+                title: const Text('انتخاب از گالری (چندتایی)',
+                    textAlign: TextAlign.right),
+                subtitle: const Text('می‌توانید چند عکس را همزمان انتخاب کنید',
+                    textAlign: TextAlign.right,
+                    style: TextStyle(fontSize: 11)),
                 onTap: () {
                   Navigator.pop(context);
-                  onGallery();
+                  _pickImagesFromGallery();
                 },
               ),
             ],
