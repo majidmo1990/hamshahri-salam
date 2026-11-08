@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../theme/app_theme.dart';
 import '../services/api_service.dart';
+import 'my_visits_screen.dart';
 
 class ReservationsScreen extends StatefulWidget {
   const ReservationsScreen({super.key});
@@ -9,13 +10,67 @@ class ReservationsScreen extends StatefulWidget {
   State<ReservationsScreen> createState() => _ReservationsScreenState();
 }
 
-class _ReservationsScreenState extends State<ReservationsScreen> {
+class _ReservationsScreenState extends State<ReservationsScreen>
+    with SingleTickerProviderStateMixin {
+  late final TabController _tabController;
+
+  @override
+  void initState() {
+    super.initState();
+    _tabController = TabController(length: 2, vsync: this);
+  }
+
+  @override
+  void dispose() {
+    _tabController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    return Scaffold(
+      backgroundColor: isDark ? AppColors.darkBg : AppColors.lightBg,
+      appBar: AppBar(
+        title: const Text('رزروهای من'),
+        bottom: TabBar(
+          controller: _tabController,
+          indicatorColor: AppColors.goldLight,
+          labelColor: isDark ? Colors.white : Colors.black87,
+          unselectedLabelColor:
+              isDark ? Colors.grey[500] : Colors.grey[600],
+          tabs: const [
+            Tab(text: 'رزرو فیلمبرداری'),
+            Tab(text: 'رزرو بازدید'),
+          ],
+        ),
+      ),
+      body: SafeArea(
+        child: TabBarView(
+          controller: _tabController,
+          children: const [
+            _VideoBookingsTab(),
+            MyVisitsScreen(embedded: true),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _VideoBookingsTab extends StatefulWidget {
+  const _VideoBookingsTab();
+
+  @override
+  State<_VideoBookingsTab> createState() => _VideoBookingsTabState();
+}
+
+class _VideoBookingsTabState extends State<_VideoBookingsTab> {
   final ApiService _api = ApiService();
   List<Map<String, dynamic>> _bookings = [];
   bool _loading = true;
   String? _error;
 
-  // وضعیت‌ها با رنگ و برچسب
   static const _statusMap = {
     'new': {'label': 'در انتظار تماس', 'color': Color(0xFF5b9dff)},
     'called': {'label': 'تماس گرفته شد', 'color': Color(0xFFf0b429)},
@@ -56,36 +111,23 @@ class _ReservationsScreenState extends State<ReservationsScreen> {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    return Scaffold(
-      backgroundColor: isDark ? AppColors.darkBg : AppColors.lightBg,
-      appBar: AppBar(
-        title: const Text('رزروهای من'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.refresh),
-            tooltip: 'به‌روزرسانی',
-            onPressed: _loadBookings,
-          ),
-        ],
-      ),
-      body: SafeArea(
-        child: _loading
-            ? const Center(child: CircularProgressIndicator())
-            : _error != null
-                ? _buildError(isDark)
-                : _bookings.isEmpty
-                    ? _buildEmptyState(isDark)
-                    : RefreshIndicator(
-                        onRefresh: _loadBookings,
-                        child: ListView.separated(
-                          padding: const EdgeInsets.all(16),
-                          itemCount: _bookings.length,
-                          separatorBuilder: (_, __) => const SizedBox(height: 12),
-                          itemBuilder: (context, index) {
-                            return _buildBookingCard(_bookings[index], isDark);
-                          },
-                        ),
-                      ),
+    if (_loading) {
+      return const Center(child: CircularProgressIndicator());
+    }
+    if (_error != null) {
+      return _buildError(isDark);
+    }
+    if (_bookings.isEmpty) {
+      return _buildEmptyState(isDark);
+    }
+    return RefreshIndicator(
+      onRefresh: _loadBookings,
+      child: ListView.separated(
+        padding: const EdgeInsets.all(16),
+        itemCount: _bookings.length,
+        separatorBuilder: (_, __) => const SizedBox(height: 12),
+        itemBuilder: (context, index) =>
+            _buildBookingCard(_bookings[index], isDark),
       ),
     );
   }

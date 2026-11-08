@@ -275,6 +275,40 @@ class ApiService {
     }
   }
 
+  // ============ Property Visits ============
+
+  Future<Map<String, dynamic>> createPropertyVisit({
+    required int propertyId,
+    required String phone,
+    String? name,
+    String? preferredDate,
+    String? preferredTime,
+    String notes = '',
+  }) async {
+    try {
+      final res = await _dio.post('/api/property-visits', data: {
+        'property_id': propertyId,
+        'phone': phone,
+        if (name != null && name.isNotEmpty) 'name': name,
+        if (preferredDate != null) 'preferred_date': preferredDate,
+        if (preferredTime != null) 'preferred_time': preferredTime,
+        'notes': notes,
+      });
+      return res.data as Map<String, dynamic>;
+    } on DioException catch (e) {
+      throw _handleError(e);
+    }
+  }
+
+  Future<List<Map<String, dynamic>>> getMyVisits() async {
+    try {
+      final res = await _dio.get('/api/my/visits');
+      return (res.data as List).cast<Map<String, dynamic>>();
+    } on DioException catch (e) {
+      throw _handleError(e);
+    }
+  }
+
   Future<Map<String, dynamic>> createProperty(
       Map<String, dynamic> data) async {
     try {

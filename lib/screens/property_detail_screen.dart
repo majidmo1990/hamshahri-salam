@@ -5,6 +5,7 @@ import 'package:video_player/video_player.dart';
 import '../theme/app_theme.dart';
 import '../state/app_data.dart';
 import '../widgets/property_image.dart';
+import '../services/api_service.dart';
 
 class PropertyDetailScreen extends StatefulWidget {
   final PropertyListing property;
@@ -407,6 +408,10 @@ class _PropertyDetailScreenState extends State<PropertyDetailScreen> {
 
   void _showReserveSheet(BuildContext context, bool isDark, PropertyListing property) {
     final phoneController = TextEditingController();
+    final nameController = TextEditingController();
+    final notesController = TextEditingController();
+    final formKey = GlobalKey<FormState>();
+    bool sending = false;
 
     showModalBottomSheet(
       context: context,
@@ -416,88 +421,211 @@ class _PropertyDetailScreenState extends State<PropertyDetailScreen> {
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
       builder: (sheetContext) {
-        return Padding(
-          padding: EdgeInsets.only(
-            bottom: MediaQuery.of(sheetContext).viewInsets.bottom,
-          ),
-          child: Padding(
-            padding: const EdgeInsets.all(20),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                Text(
-                  'رزرو ملک',
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w700,
-                    color: isDark ? Colors.white : Colors.black87,
-                  ),
-                ),
-                const SizedBox(height: 6),
-                Text(
-                  'شماره تماس خود را وارد کنید تا کارشناسان ما با شما تماس بگیرند.',
-                  style: TextStyle(
-                    fontSize: 12.5,
-                    color: isDark ? Colors.grey[400] : Colors.grey[600],
-                  ),
-                ),
-                const SizedBox(height: 16),
-                TextField(
-                  controller: phoneController,
-                  keyboardType: TextInputType.phone,
-                  style: TextStyle(color: isDark ? Colors.white : Colors.black87),
-                  decoration: InputDecoration(
-                    hintText: 'مثال: ۰۹۱۲۳۴۵۶۷۸۹',
-                    hintStyle: TextStyle(
-                      color: isDark ? Colors.grey[500] : Colors.grey[400],
-                    ),
-                    filled: true,
-                    fillColor: isDark
-                        ? AppColors.darkBg
-                        : AppColors.skyBlue.withValues(alpha: 0.4),
-                    contentPadding:
-                        const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                      borderSide: BorderSide.none,
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 18),
-                SizedBox(
-                  height: 50,
-                  child: ElevatedButton(
-                    onPressed: () {
-                      final phone = phoneController.text.trim();
-                      final isValid = RegExp(r'^09[0-9]{9}$').hasMatch(phone);
-                      if (!isValid) {
-                        ScaffoldMessenger.of(sheetContext).showSnackBar(
-                          const SnackBar(
-                            content: Text('شماره موبایل معتبر وارد کنید'),
+        return StatefulBuilder(
+          builder: (sheetContext, setSheetState) {
+            return Padding(
+              padding: EdgeInsets.only(
+                bottom: MediaQuery.of(sheetContext).viewInsets.bottom,
+              ),
+              child: SingleChildScrollView(
+                child: Padding(
+                  padding: const EdgeInsets.all(20),
+                  child: Form(
+                    key: formKey,
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        Text(
+                          'رزرو و درخواست تماس',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w700,
+                            color: isDark ? Colors.white : Colors.black87,
                           ),
-                        );
-                        return;
-                      }
-
-                      Provider.of<AppData>(context, listen: false)
-                          .addReservation(property, phone);
-
-                      Navigator.pop(sheetContext);
-
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('رزرو شما با موفقیت ثبت شد')),
-                      );
-                    },
-                    child: const Text('ثبت رزرو', style: TextStyle(fontSize: 15)),
+                        ),
+                        const SizedBox(height: 6),
+                        Text(
+                          'اطلاعات خود را وارد کنید تا کارشناسان ما با شما تماس بگیرند.',
+                          style: TextStyle(
+                            fontSize: 12.5,
+                            color: isDark ? Colors.grey[400] : Colors.grey[600],
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+                        TextFormField(
+                          controller: phoneController,
+                          keyboardType: TextInputType.phone,
+                          enabled: !sending,
+                          style: TextStyle(
+                              color: isDark ? Colors.white : Colors.black87),
+                          decoration: _inputDecoration(
+                            'شماره تماس *',
+                            'مثال: ۰۹۱۲۳۴۵۶۷۸۹',
+                            isDark,
+                          ),
+                          validator: (v) {
+                            if (v == null || v.trim().isEmpty) {
+                              return 'شماره تماس الزامی است';
+                            }
+                            final normalized = v.trim().replaceAll(
+                              RegExp(r'[۰-۹]'),
+                              (m) => '${'۰۱۲۳۴۵۶۷۸۹'.indexOf(m)}',
+                            );
+                            if (!RegExp(r'^09[0-9]{9}$').hasMatch(normalized)) {
+                              return 'شماره موبایل معتبر وارد کنید';
+                            }
+                            return null;
+                          },
+                        ),
+                        const SizedBox(height: 12),
+                        TextFormField(
+                          controller: nameController,
+                          enabled: !sending,
+                          style: TextStyle(
+                              color: isDark ? Colors.white : Colors.black87),
+                          decoration: _inputDecoration(
+                            'نام (اختیاری)',
+                            'نام و نام خانوادگی',
+                            isDark,
+                          ),
+                        ),
+                        const SizedBox(height: 12),
+                        TextFormField(
+                          controller: notesController,
+                          enabled: !sending,
+                          maxLines: 3,
+                          style: TextStyle(
+                              color: isDark ? Colors.white : Colors.black87),
+                          decoration: _inputDecoration(
+                            'توضیحات (اختیاری)',
+                            'مثلاً: بعدازظهرها در دسترس هستم',
+                            isDark,
+                          ),
+                        ),
+                        const SizedBox(height: 18),
+                        SizedBox(
+                          height: 50,
+                          child: ElevatedButton(
+                            onPressed: sending
+                                ? null
+                                : () async {
+                                    if (!formKey.currentState!.validate()) {
+                                      return;
+                                    }
+                                    setSheetState(() => sending = true);
+                                    final rawPhone = phoneController.text.trim();
+                                    final phone = rawPhone.replaceAll(
+                                      RegExp(r'[۰-۹]'),
+                                      (m) => '${'۰۱۲۳۴۵۶۷۸۹'.indexOf(m)}',
+                                    );
+                                    try {
+                                      await ApiService().init();
+                                      await ApiService().createPropertyVisit(
+                                        propertyId: property.id,
+                                        phone: phone,
+                                        name: nameController.text.trim(),
+                                        notes: notesController.text.trim(),
+                                      );
+                                      if (!mounted) return;
+                                      if (!sheetContext.mounted) return;
+                                      Navigator.pop(sheetContext);
+                                      ScaffoldMessenger.of(context).showSnackBar(
+                                        const SnackBar(
+                                          content: Text(
+                                            'درخواست شما ثبت شد ✅ کارشناسان ما به‌زودی تماس می‌گیرند',
+                                          ),
+                                          behavior: SnackBarBehavior.floating,
+                                          duration: Duration(seconds: 4),
+                                        ),
+                                      );
+                                    } catch (e) {
+                                      if (!sheetContext.mounted) return;
+                                      setSheetState(() => sending = false);
+                                      ScaffoldMessenger.of(sheetContext)
+                                          .showSnackBar(
+                                        SnackBar(
+                                          content: Text('خطا: $e'),
+                                          backgroundColor: Colors.red[600],
+                                        ),
+                                      );
+                                    }
+                                  },
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: AppColors.goldPrimary,
+                              foregroundColor: Colors.black,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                            ),
+                            child: sending
+                                ? const SizedBox(
+                                    width: 22,
+                                    height: 22,
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2.5,
+                                      color: Colors.black,
+                                    ),
+                                  )
+                                : const Text(
+                                    'ثبت درخواست',
+                                    style: TextStyle(
+                                      fontSize: 15,
+                                      fontWeight: FontWeight.w700,
+                                    ),
+                                  ),
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                      ],
+                    ),
                   ),
                 ),
-                const SizedBox(height: 8),
-              ],
-            ),
-          ),
+              ),
+            );
+          },
         );
       },
+    );
+  }
+
+  InputDecoration _inputDecoration(String label, String hint, bool isDark) {
+    return InputDecoration(
+      labelText: label,
+      hintText: hint,
+      labelStyle: TextStyle(
+        color: isDark ? Colors.grey[400] : Colors.grey[700],
+        fontSize: 12.5,
+      ),
+      hintStyle: TextStyle(
+        color: isDark ? Colors.grey[500] : Colors.grey[400],
+        fontSize: 12.5,
+      ),
+      filled: true,
+      fillColor:
+          isDark ? AppColors.darkBg : AppColors.skyBlue.withValues(alpha: 0.4),
+      contentPadding:
+          const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide: BorderSide.none,
+      ),
+      enabledBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide: BorderSide.none,
+      ),
+      focusedBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide: const BorderSide(color: AppColors.primaryBlue),
+      ),
+      errorBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide: BorderSide(color: Colors.red[400]!),
+      ),
+      focusedErrorBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide: BorderSide(color: Colors.red[400]!),
+      ),
     );
   }
 }
