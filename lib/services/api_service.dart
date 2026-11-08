@@ -190,13 +190,20 @@ class ApiService {
     }
   }
 
-  Future<String> uploadImage(File file) async {
+  Future<String> uploadImage(
+    File file, {
+    void Function(int sent, int total)? onProgress,
+  }) async {
     try {
       final filename = file.path.split('/').last;
       final formData = FormData.fromMap({
         'file': await MultipartFile.fromFile(file.path, filename: filename),
       });
-      final res = await _dio.post('/api/upload/image', data: formData);
+      final res = await _dio.post(
+        '/api/upload/image',
+        data: formData,
+        onSendProgress: onProgress,
+      );
       return (res.data as Map<String, dynamic>)['file_path'] as String;
     } on DioException catch (e) {
       throw _handleError(e);

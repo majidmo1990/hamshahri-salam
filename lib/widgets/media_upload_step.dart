@@ -2,6 +2,8 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import '../theme/app_theme.dart';
+import '../utils/image_compressor.dart';
+import '../services/api_service.dart';
 
 class MediaUploadStep extends StatefulWidget {
   final VoidCallback onBack;
@@ -23,6 +25,10 @@ class _MediaUploadStepState extends State<MediaUploadStep> {
   final ImagePicker _picker = ImagePicker();
   final List<File> _images = [];
   bool _isSubmitting = false;
+  double _uploadProgress = 0;
+  int _uploadedCount = 0;
+  int _totalCount = 0;
+  String _statusText = '';
 
   static const int maxImages = 7;
 
@@ -42,7 +48,11 @@ class _MediaUploadStepState extends State<MediaUploadStep> {
     }
 
     final remaining = maxImages - _images.length;
-    final picked = await _picker.pickMultiImage(imageQuality: 85);
+    final picked = await _picker.pickMultiImage(
+      imageQuality: 75,
+      maxWidth: 1200,
+      maxHeight: 1200,
+    );
     
     if (picked.isEmpty) return;
 
@@ -66,7 +76,9 @@ class _MediaUploadStepState extends State<MediaUploadStep> {
 
     final picked = await _picker.pickImage(
       source: ImageSource.camera,
-      imageQuality: 85,
+      imageQuality: 75,
+      maxWidth: 1200,
+      maxHeight: 1200,
     );
     if (picked != null) {
       setState(() => _images.add(File(picked.path)));
@@ -84,6 +96,80 @@ class _MediaUploadStepState extends State<MediaUploadStep> {
 
   void _removeImage(int index) {
     setState(() => _images.removeAt(index));
+  }
+
+  Future<void> _uploadAll() async {
+    if (_images.isEmpty) return;
+    
+    setState(() {
+      _isSubmitting = true;
+      _totalCount = _images.length;
+      _uploadedCount = 0;
+      _uploadProgress = 0;
+      _statusText = 'در حال آماده‌سازی...';
+    });
+    
+    final api = ApiService();
+    await api.init();
+    final uploadedPaths = <String>[];
+    
+    for (var i = 0; i < _images.length; i++) {
+      final file = _images[i];
+      
+      // ۱. فشرده‌سازی
+      if (mounted) {
+        setState(() {
+          _statusText = 'فشرده‌سازی ${i + 1} از $_totalCount';
+        });
+      }
+      
+      final compressed = await ImageCompressor.compress(file);
+      
+      // ۲. آپلود
+      if (mounted) {
+        setState(() {
+          _statusText = 'آپلود ${i + 1} از $_totalCount';
+        });
+      }
+      
+      try {
+        final path = await api.uploadImage(
+          compressed,
+          onProgress: (sent, total) {
+            if (total > 0 && mounted) {
+              setState(() {
+                _uploadProgress = (i + sent / total) / _totalCount;
+              });
+            }
+          },
+        );
+        uploadedPaths.add(path);
+        
+        if (mounted) {
+          setState(() => _uploadedCount = i + 1);
+        }
+        
+        // پاک کردن فایل فشرده موقت
+        if (compressed.path != file.path) {
+          try {
+            await compressed.delete();
+          } catch (_) {}
+        }
+      } catch (e) {
+        if (mounted) {
+          setState(() {
+            _isSubmitting = false;
+            _statusText = 'خطا: $e';
+          });
+        }
+        return;
+      }
+    }
+    
+    // بعد از همه، ثبت
+    if (mounted) {
+      widget.onSubmit(uploadedPaths);
+    }
   }
 
   bool get _canSubmit => _images.isNotEmpty;
@@ -134,6 +220,54 @@ class _MediaUploadStepState extends State<MediaUploadStep> {
                 ],
               ),
             ),
+          if (_isSubmitting) ...[
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: (isDark ? AppColors.darkSurface : Colors.white),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(
+                  color: isDark ? AppColors.darkBorder : AppColors.skyBlue,
+                ),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Row(
+                    children: [
+                      Text(
+                        _statusText,
+                        style: TextStyle(
+                          fontSize: 12.5,
+                          color: isDark ? Colors.white70 : Colors.black87,
+                        ),
+                      ),
+                      const Spacer(),
+                      Text(
+                        '${(_uploadProgress * 100).toStringAsFixed(0)}%',
+                        style: TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w700,
+                          color: AppColors.primaryBlue,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(4),
+                    child: LinearProgressIndicator(
+                      value: _uploadProgress,
+                      minHeight: 6,
+                      backgroundColor: (isDark ? Colors.grey[800] : Colors.grey[200]),
+                      valueColor: const AlwaysStoppedAnimation<Color>(AppColors.primaryBlue),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 12),
+          ],
           const SizedBox(height: 28),
           Row(
             children: [
@@ -169,19 +303,26 @@ class _MediaUploadStepState extends State<MediaUploadStep> {
                       ),
                     ),
                     onPressed: _canSubmit && !_isSubmitting
-                        ? () {
-                            setState(() => _isSubmitting = true);
-                            widget.onSubmit(_images.map((f) => f.path).toList());
-                          }
+                        ? _uploadAll
                         : null,
                     child: _isSubmitting
-                        ? const SizedBox(
-                            width: 20,
-                            height: 20,
-                            child: CircularProgressIndicator(
-                              strokeWidth: 2,
-                              color: Colors.white,
-                            ),
+                        ? Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              const SizedBox(
+                                width: 18,
+                                height: 18,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                  color: Colors.white,
+                                ),
+                              ),
+                              const SizedBox(width: 10),
+                              Text(
+                                '${(_uploadProgress * 100).toStringAsFixed(0)}%',
+                                style: const TextStyle(color: Colors.white, fontSize: 14),
+                              ),
+                            ],
                           )
                         : const Text(
                             'ثبت و ارسال',
