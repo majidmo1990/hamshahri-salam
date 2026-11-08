@@ -468,10 +468,7 @@ class _PropertyDetailScreenState extends State<PropertyDetailScreen> {
                             if (v == null || v.trim().isEmpty) {
                               return 'شماره تماس الزامی است';
                             }
-                            final normalized = v.trim().replaceAll(
-                              RegExp(r'[۰-۹]'),
-                              (m) => '${'۰۱۲۳۴۵۶۷۸۹'.indexOf(m)}',
-                            );
+                            final normalized = v.trim().replaceAllMapped(RegExp(r'[۰-۹]'), (m) => '${'۰۱۲۳۴۵۶۷۸۹'.indexOf(m.group(0)!)}');
                             if (!RegExp(r'^09[0-9]{9}$').hasMatch(normalized)) {
                               return 'شماره موبایل معتبر وارد کنید';
                             }
@@ -515,10 +512,7 @@ class _PropertyDetailScreenState extends State<PropertyDetailScreen> {
                                     }
                                     setSheetState(() => sending = true);
                                     final rawPhone = phoneController.text.trim();
-                                    final phone = rawPhone.replaceAll(
-                                      RegExp(r'[۰-۹]'),
-                                      (m) => '${'۰۱۲۳۴۵۶۷۸۹'.indexOf(m)}',
-                                    );
+                                    final phone = rawPhone.replaceAllMapped(RegExp(r'[۰-۹]'), (m) => '${'۰۱۲۳۴۵۶۷۸۹'.indexOf(m.group(0)!)}');
                                     try {
                                       await ApiService().init();
                                       await ApiService().createPropertyVisit(
