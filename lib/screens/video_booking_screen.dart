@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../theme/app_theme.dart';
 import '../services/api_service.dart';
+import 'reservations_screen.dart';
 
 class VideoBookingScreen extends StatefulWidget {
   const VideoBookingScreen({super.key});
@@ -22,6 +23,33 @@ class _VideoBookingScreenState extends State<VideoBookingScreen> {
     '09:00', '10:00', '11:00',
     '14:00', '15:00', '16:00',
   ];
+
+  // تبدیل تاریخ میلادی به شمسی
+  String _toShamsi(DateTime d) {
+    const gDaysInMonth = [0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334];
+    int gy = d.year;
+    int gm = d.month;
+    int gd = d.day;
+    int gy2 = (gm > 2) ? (gy + 1) : gy;
+    int days = 355666 + (365 * gy) + ((gy2 + 3) ~/ 4) - ((gy2 + 99) ~/ 100) + ((gy2 + 399) ~/ 400) + gd + gDaysInMonth[gm - 1];
+    int jy = -1595 + (33 * (days ~/ 12053));
+    days %= 12053;
+    jy += 4 * (days ~/ 1461);
+    days %= 1461;
+    if (days > 365) {
+      jy += (days - 1) ~/ 365;
+      days = (days - 1) % 365;
+    }
+    int jm, jd;
+    if (days < 186) {
+      jm = 1 + (days ~/ 31);
+      jd = 1 + (days % 31);
+    } else {
+      jm = 7 + ((days - 186) ~/ 30);
+      jd = 1 + ((days - 186) % 30);
+    }
+    return '$jy/${jm.toString().padLeft(2, '0')}/${jd.toString().padLeft(2, '0')}';
+  }
 
   @override
   void dispose() {
@@ -189,7 +217,22 @@ class _VideoBookingScreenState extends State<VideoBookingScreen> {
                     fontSize: 12.5,
                     color: isDark ? Colors.grey[400] : Colors.grey[600])),
             const SizedBox(height: 24),
-            ElevatedButton(
+            SizedBox(
+              width: double.infinity,
+              height: 48,
+              child: ElevatedButton.icon(
+                onPressed: () {
+                  Navigator.pushReplacement(
+                    context,
+                    MaterialPageRoute(builder: (_) => const ReservationsScreen()),
+                  );
+                },
+                icon: const Icon(Icons.list_alt_rounded, size: 18),
+                label: const Text('مشاهده رزروها'),
+              ),
+            ),
+            const SizedBox(height: 8),
+            TextButton(
               onPressed: () => Navigator.pop(context),
               child: const Text('بازگشت'),
             ),
@@ -202,7 +245,7 @@ class _VideoBookingScreenState extends State<VideoBookingScreen> {
   Widget _form(bool isDark) {
     final dateText = _date == null
         ? 'انتخاب تاریخ'
-        : '${_date!.year}/${_date!.month.toString().padLeft(2, '0')}/${_date!.day.toString().padLeft(2, '0')}';
+        : _toShamsi(_date!);
     final timeText = _time ?? 'انتخاب ساعت';
 
     return ListView(

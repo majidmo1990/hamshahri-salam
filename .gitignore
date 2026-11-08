@@ -49,3 +49,9 @@ db hamshahri salam pass.txt
 *.txt
 !pubspec.txt
 ببین میخوام یه تغییر اساسی.txt
+
+# Signing keys
+android/keystore/*.jks
+android/key.properties
+*.keystore
+*.jks

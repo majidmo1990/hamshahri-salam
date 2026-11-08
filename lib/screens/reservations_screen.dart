@@ -1,114 +1,245 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 import '../theme/app_theme.dart';
-import '../state/app_data.dart';
+import '../services/api_service.dart';
 
-class ReservationsScreen extends StatelessWidget {
+class ReservationsScreen extends StatefulWidget {
   const ReservationsScreen({super.key});
+
+  @override
+  State<ReservationsScreen> createState() => _ReservationsScreenState();
+}
+
+class _ReservationsScreenState extends State<ReservationsScreen> {
+  final ApiService _api = ApiService();
+  List<Map<String, dynamic>> _bookings = [];
+  bool _loading = true;
+  String? _error;
+
+  // وضعیت‌ها با رنگ و برچسب
+  static const _statusMap = {
+    'new': {'label': 'در انتظار تماس', 'color': Color(0xFF5b9dff)},
+    'called': {'label': 'تماس گرفته شد', 'color': Color(0xFFf0b429)},
+    'no_answer': {'label': 'پاسخگو نبود', 'color': Color(0xFFf97316)},
+    'confirmed': {'label': 'تایید شده', 'color': Color(0xFF3ecf8e)},
+    'done': {'label': 'انجام شد', 'color': Color(0xFFa89f8c)},
+    'cancelled': {'label': 'لغو شد', 'color': Color(0xFFef5b5b)},
+  };
+
+  @override
+  void initState() {
+    super.initState();
+    _api.init().then((_) => _loadBookings());
+  }
+
+  Future<void> _loadBookings() async {
+    if (!mounted) return;
+    setState(() {
+      _loading = true;
+      _error = null;
+    });
+    try {
+      final list = await _api.getMyBookings();
+      if (!mounted) return;
+      setState(() {
+        _bookings = list;
+        _loading = false;
+      });
+    } catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _error = e.toString();
+        _loading = false;
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final appData = context.watch<AppData>();
-    final reservations = appData.reservations.reversed.toList();
-
     return Scaffold(
       backgroundColor: isDark ? AppColors.darkBg : AppColors.lightBg,
+      appBar: AppBar(
+        title: const Text('رزروهای من'),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.refresh),
+            tooltip: 'به‌روزرسانی',
+            onPressed: _loadBookings,
+          ),
+        ],
+      ),
       body: SafeArea(
-        child: reservations.isEmpty
-            ? _buildEmptyState(isDark)
-            : ListView.separated(
-                padding: const EdgeInsets.all(16),
-                itemCount: reservations.length,
-                separatorBuilder: (_, __) => const SizedBox(height: 12),
-                itemBuilder: (context, index) {
-                  final reservation = reservations[index];
-                  return Container(
-                    padding: const EdgeInsets.all(14),
-                    decoration: BoxDecoration(
-                      color: isDark ? AppColors.darkSurface : Colors.white,
-                      borderRadius: BorderRadius.circular(14),
-                      border: Border.all(
-                        color: isDark ? AppColors.darkBorder : AppColors.skyBlue,
+        child: _loading
+            ? const Center(child: CircularProgressIndicator())
+            : _error != null
+                ? _buildError(isDark)
+                : _bookings.isEmpty
+                    ? _buildEmptyState(isDark)
+                    : RefreshIndicator(
+                        onRefresh: _loadBookings,
+                        child: ListView.separated(
+                          padding: const EdgeInsets.all(16),
+                          itemCount: _bookings.length,
+                          separatorBuilder: (_, __) => const SizedBox(height: 12),
+                          itemBuilder: (context, index) {
+                            return _buildBookingCard(_bookings[index], isDark);
+                          },
+                        ),
                       ),
-                    ),
-                    child: Row(
-                      children: [
-                        ClipRRect(
-                          borderRadius: BorderRadius.circular(10),
-                          child: Image.asset(
-                            reservation.property.imagePaths.isNotEmpty ? reservation.property.imagePaths.first : 'assets/images/slider1.jpg',
-                            width: 60,
-                            height: 60,
-                            fit: BoxFit.cover,
-                            errorBuilder: (_, __, ___) => Container(
-                              width: 60,
-                              height: 60,
-                              color: isDark
-                                  ? AppColors.darkBg
-                                  : AppColors.skyBlue,
-                            ),
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                reservation.property.title,
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                                style: TextStyle(
-                                  fontSize: 13,
-                                  fontWeight: FontWeight.w600,
-                                  color: isDark ? Colors.white : Colors.black87,
-                                ),
-                              ),
-                              const SizedBox(height: 4),
-                              Row(
-                                children: [
-                                  Icon(Icons.phone_outlined,
-                                      size: 13,
-                                      color: isDark
-                                          ? Colors.grey[400]
-                                          : Colors.grey[600]),
-                                  const SizedBox(width: 4),
-                                  Text(
-                                    reservation.phoneNumber,
-                                    style: TextStyle(
-                                      fontSize: 12,
-                                      color: isDark
-                                          ? Colors.grey[400]
-                                          : Colors.grey[600],
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ],
-                          ),
-                        ),
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 10, vertical: 5),
-                          decoration: BoxDecoration(
-                            color: AppColors.primaryBlue.withValues(alpha: 0.12),
-                            borderRadius: BorderRadius.circular(20),
-                          ),
-                          child: const Text(
-                            'در انتظار تماس',
-                            style: TextStyle(
-                              fontSize: 10.5,
-                              color: AppColors.primaryBlue,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  );
-                },
+      ),
+    );
+  }
+
+  Widget _buildBookingCard(Map<String, dynamic> b, bool isDark) {
+    final status = b['status'] as String? ?? 'new';
+    final st = _statusMap[status] ?? _statusMap['new']!;
+    final color = st['color'] as Color;
+
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: isDark ? AppColors.darkSurface : Colors.white,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(
+          color: isDark ? AppColors.darkBorder : AppColors.skyBlue,
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // ردیف اول: آدرس + badge
+          Row(
+            children: [
+              Icon(Icons.location_on_outlined,
+                  size: 16, color: AppColors.primaryBlue),
+              const SizedBox(width: 6),
+              Expanded(
+                child: Text(
+                  b['address'] ?? '',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    fontSize: 13.5,
+                    fontWeight: FontWeight.w600,
+                    color: isDark ? Colors.white : Colors.black87,
+                  ),
+                ),
               ),
+              const SizedBox(width: 6),
+              Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                decoration: BoxDecoration(
+                  color: color.withValues(alpha: 0.15),
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(color: color.withValues(alpha: 0.4)),
+                ),
+                child: Text(
+                  st['label'] as String,
+                  style: TextStyle(
+                    fontSize: 11,
+                    color: color,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 10),
+
+          // ردیف دوم: تاریخ + ساعت
+          Row(
+            children: [
+              Icon(Icons.calendar_today_outlined,
+                  size: 14,
+                  color: isDark ? Colors.grey[400] : Colors.grey[600]),
+              const SizedBox(width: 6),
+              Text(
+                b['date'] ?? '',
+                style: TextStyle(
+                    fontSize: 12.5,
+                    color: isDark ? Colors.grey[300] : Colors.grey[700]),
+              ),
+              const SizedBox(width: 16),
+              Icon(Icons.access_time_rounded,
+                  size: 14,
+                  color: isDark ? Colors.grey[400] : Colors.grey[600]),
+              const SizedBox(width: 6),
+              Text(
+                b['time'] ?? '',
+                style: TextStyle(
+                    fontSize: 12.5,
+                    color: isDark ? Colors.grey[300] : Colors.grey[700]),
+              ),
+            ],
+          ),
+
+          // ردیف سوم: توضیحات
+          if (b['notes'] != null && (b['notes'] as String).isNotEmpty) ...[
+            const SizedBox(height: 8),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+              decoration: BoxDecoration(
+                color: isDark ? AppColors.darkBg : Colors.grey[50],
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Icon(Icons.notes,
+                      size: 14,
+                      color: isDark ? Colors.grey[500] : Colors.grey[600]),
+                  const SizedBox(width: 6),
+                  Expanded(
+                    child: Text(
+                      b['notes'],
+                      style: TextStyle(
+                          fontSize: 12,
+                          color: isDark
+                              ? Colors.grey[400]
+                              : Colors.grey[600]),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
+  Widget _buildError(bool isDark) {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(Icons.error_outline, size: 60, color: Colors.red[400]),
+            const SizedBox(height: 16),
+            Text(
+              'خطا در دریافت رزروها',
+              style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w700,
+                  color: isDark ? Colors.white : Colors.black87),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              _error ?? '',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                  fontSize: 12,
+                  color: isDark ? Colors.grey[400] : Colors.grey[600]),
+            ),
+            const SizedBox(height: 16),
+            ElevatedButton(
+              onPressed: _loadBookings,
+              child: const Text('تلاش دوباره'),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -129,6 +260,14 @@ class ReservationsScreen extends StatelessWidget {
             style: TextStyle(
               fontSize: 13,
               color: isDark ? Colors.grey[500] : Colors.grey[500],
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'برای رزرو فیلمبرداری، از صفحه اصلی اقدام کنید',
+            style: TextStyle(
+              fontSize: 11.5,
+              color: isDark ? Colors.grey[600] : Colors.grey[400],
             ),
           ),
         ],

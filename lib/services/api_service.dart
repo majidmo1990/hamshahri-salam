@@ -27,15 +27,11 @@ class ApiService {
       headers: {'Accept': 'application/json'},
     ));
 
+    // SSL validation به صورت پیش‌فرض فعال است (امن)
+    // badCertificateCallback حذف شد برای امنیت
     _dio.httpClientAdapter = IOHttpClientAdapter(
       createHttpClient: () {
-        final client = HttpClient();
-        client.badCertificateCallback =
-            (X509Certificate cert, String host, int port) {
-          print('SSL BYPASS: $host:$port');
-          return true;
-        };
-        return client;
+        return HttpClient();
       },
     );
 
@@ -257,6 +253,15 @@ class ApiService {
   Future<List<Map<String, dynamic>>> getMyProperties() async {
     try {
       final res = await _dio.get('/api/my/properties');
+      return (res.data as List).cast<Map<String, dynamic>>();
+    } on DioException catch (e) {
+      throw _handleError(e);
+    }
+  }
+
+  Future<List<Map<String, dynamic>>> getMyBookings() async {
+    try {
+      final res = await _dio.get('/api/my/bookings');
       return (res.data as List).cast<Map<String, dynamic>>();
     } on DioException catch (e) {
       throw _handleError(e);
