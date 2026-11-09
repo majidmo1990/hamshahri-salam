@@ -1,13 +1,34 @@
 import 'package:flutter/material.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../theme/app_theme.dart';
 
 class SupportScreen extends StatelessWidget {
   const SupportScreen({super.key});
 
+  Future<void> _openUrl(BuildContext context, String url) async {
+    try {
+      final uri = Uri.parse(url);
+      if (await canLaunchUrl(uri)) {
+        await launchUrl(uri, mode: LaunchMode.externalApplication);
+      } else {
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('برنامه مورد نظر نصب نیست')),
+          );
+        }
+      }
+    } catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('خطا در باز کردن لینک: $e')),
+        );
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-
     return Directionality(
       textDirection: TextDirection.rtl,
       child: Scaffold(
@@ -17,60 +38,141 @@ class SupportScreen extends StatelessWidget {
           child: ListView(
             padding: const EdgeInsets.all(20),
             children: [
-              Text(
-                'چطور می‌توانیم کمکتان کنیم؟',
-                style: TextStyle(
-                  fontSize: 15,
-                  fontWeight: FontWeight.w700,
-                  color: isDark ? Colors.white : Colors.black87,
+              // هدر
+              Center(
+                child: Container(
+                  width: 90,
+                  height: 90,
+                  decoration: BoxDecoration(
+                    color: AppColors.goldLight.withValues(alpha: 0.15),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(Icons.support_agent_rounded,
+                      size: 45, color: AppColors.goldLight),
                 ),
               ),
               const SizedBox(height: 16),
-              _contactTile(
-                icon: Icons.call_outlined,
-                label: 'تماس تلفنی',
-                value: '۰۲۱-۱۲۳۴۵۶۷۸',
-                isDark: isDark,
-              ),
-              _contactTile(
-                icon: Icons.telegram,
-                label: 'تلگرام',
-                value: '@hamshahrisalam_support',
-                isDark: isDark,
-              ),
-              _contactTile(
-                icon: Icons.email_outlined,
-                label: 'ایمیل',
-                value: 'support@hamshahrisalam.ir',
-                isDark: isDark,
-              ),
-              const SizedBox(height: 24),
-              Text(
-                'سوالات متداول',
-                style: TextStyle(
-                  fontSize: 15,
-                  fontWeight: FontWeight.w700,
-                  color: isDark ? Colors.white : Colors.black87,
+              Center(
+                child: Text(
+                  'پشتیبانی همشهری سلام',
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w700,
+                    color: isDark ? Colors.white : Colors.black87,
+                  ),
                 ),
               ),
-              const SizedBox(height: 12),
-              _faqTile(
-                isDark,
-                question: 'چگونه ملک خود را ثبت کنم؟',
-                answer:
-                    'از صفحه اصلی، روی دکمه فروش ملک یا دکمه + پایین صفحه بزنید و مراحل فرم را تکمیل کنید.',
+              const SizedBox(height: 6),
+              Center(
+                child: Text(
+                  'برای سوال، پیشنهاد یا شکایت با ما در تماس باشید',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: 12.5,
+                    color: isDark ? Colors.grey[400] : Colors.grey[600],
+                  ),
+                ),
               ),
-              _faqTile(
-                isDark,
-                question: 'چه زمانی آگهی من نمایش داده می‌شود؟',
-                answer:
-                    'پس از بررسی و تایید توسط مدیریت، آگهی شما در لیست ملک‌ها قابل مشاهده خواهد بود.',
+              const SizedBox(height: 30),
+
+              // تماس تلفنی
+              _contactCard(
+                icon: Icons.phone_rounded,
+                title: 'تماس تلفنی',
+                subtitle: '۰۹۱۲۷۴۵۸۱۷۲',
+                color: Colors.green,
+                isDark: isDark,
+                onTap: () => _openUrl(context, 'tel:09127458172'),
               ),
-              _faqTile(
-                isDark,
-                question: 'چگونه با فروشنده تماس بگیرم؟',
-                answer:
-                    'در صفحه جزئیات ملک، دکمه رزرو و درخواست تماس را بزنید و شماره خود را وارد کنید.',
+
+              // پیامک
+              _contactCard(
+                icon: Icons.sms_rounded,
+                title: 'پیامک',
+                subtitle: '۰۹۱۲۷۴۵۸۱۷۲',
+                color: Colors.orange,
+                isDark: isDark,
+                onTap: () => _openUrl(context, 'sms:09127458172'),
+              ),
+
+              // ایمیل
+              _contactCard(
+                icon: Icons.email_rounded,
+                title: 'ایمیل',
+                subtitle: 'hihamshahri@gmail.com',
+                color: Colors.blue,
+                isDark: isDark,
+                onTap: () => _openUrl(context, 'mailto:hihamshahri@gmail.com'),
+              ),
+
+              // روبیکا
+              _contactCard(
+                icon: Icons.chat_bubble_rounded,
+                title: 'روبیکا',
+                subtitle: '@amlak_hamshahrisalam',
+                color: const Color(0xFF8B5CF6),
+                isDark: isDark,
+                onTap: () =>
+                    _openUrl(context, 'https://rubika.ir/amlak_hamshahrisalam'),
+              ),
+
+              const SizedBox(height: 30),
+
+              // ساعات پاسخگویی
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: isDark ? AppColors.darkSurface : Colors.white,
+                  borderRadius: BorderRadius.circular(14),
+                  border: Border.all(
+                    color: isDark
+                        ? AppColors.darkGoldBorder
+                        : AppColors.skyBlue,
+                  ),
+                ),
+                child: Row(
+                  children: [
+                    Icon(Icons.schedule_rounded,
+                        size: 22, color: AppColors.goldLight),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'ساعات پاسخگویی',
+                            style: TextStyle(
+                              fontSize: 13,
+                              fontWeight: FontWeight.w700,
+                              color: isDark ? Colors.white : Colors.black87,
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            'شنبه تا پنجشنبه: ۹ صبح - ۶ عصر',
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: isDark
+                                  ? Colors.grey[400]
+                                  : Colors.grey[600],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 20),
+
+              Center(
+                child: Text(
+                  'پاسخگویی معمولاً کمتر از ۲۴ ساعت',
+                  style: TextStyle(
+                    fontSize: 11.5,
+                    color: isDark ? Colors.grey[500] : Colors.grey[500],
+                  ),
+                ),
               ),
             ],
           ),
@@ -79,15 +181,16 @@ class SupportScreen extends StatelessWidget {
     );
   }
 
-  Widget _contactTile({
+  Widget _contactCard({
     required IconData icon,
-    required String label,
-    required String value,
+    required String title,
+    required String subtitle,
+    required Color color,
     required bool isDark,
+    required VoidCallback onTap,
   }) {
     return Container(
-      margin: const EdgeInsets.only(bottom: 10),
-      padding: const EdgeInsets.all(14),
+      margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
         color: isDark ? AppColors.darkSurface : Colors.white,
         borderRadius: BorderRadius.circular(14),
@@ -95,71 +198,41 @@ class SupportScreen extends StatelessWidget {
           color: isDark ? AppColors.darkGoldBorder : AppColors.skyBlue,
         ),
       ),
-      child: Row(
-        children: [
-          Icon(icon, color: AppColors.goldLight, size: 22),
-          const SizedBox(width: 12),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                label,
-                style: TextStyle(
-                  fontSize: 11.5,
-                  color: isDark ? Colors.grey[400] : Colors.grey[600],
-                ),
-              ),
-              const SizedBox(height: 2),
-              Text(
-                value,
-                style: TextStyle(
-                  fontSize: 13,
-                  fontWeight: FontWeight.w600,
-                  color: isDark ? Colors.white : Colors.black87,
-                ),
-              ),
-            ],
+      child: ListTile(
+        onTap: onTap,
+        contentPadding:
+            const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+        leading: Container(
+          width: 42,
+          height: 42,
+          decoration: BoxDecoration(
+            color: color.withValues(alpha: 0.15),
+            borderRadius: BorderRadius.circular(12),
           ),
-        ],
-      ),
-    );
-  }
-
-  Widget _faqTile(bool isDark, {required String question, required String answer}) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 10),
-      decoration: BoxDecoration(
-        color: isDark ? AppColors.darkSurface : Colors.white,
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(
-          color: isDark ? AppColors.darkGoldBorder : AppColors.skyBlue,
+          child: Icon(icon, color: color, size: 22),
         ),
-      ),
-      child: Theme(
-        data: ThemeData(dividerColor: Colors.transparent),
-        child: ExpansionTile(
-          title: Text(
-            question,
+        title: Text(
+          title,
+          style: TextStyle(
+            fontSize: 13.5,
+            fontWeight: FontWeight.w600,
+            color: isDark ? Colors.white : Colors.black87,
+          ),
+        ),
+        subtitle: Padding(
+          padding: const EdgeInsets.only(top: 2),
+          child: Text(
+            subtitle,
             style: TextStyle(
-              fontSize: 13,
-              fontWeight: FontWeight.w600,
-              color: isDark ? Colors.white : Colors.black87,
+              fontSize: 12.5,
+              color: isDark ? Colors.grey[400] : Colors.grey[600],
             ),
           ),
-          iconColor: AppColors.goldLight,
-          collapsedIconColor: isDark ? Colors.grey[400] : Colors.grey[600],
-          childrenPadding: const EdgeInsets.fromLTRB(16, 0, 16, 14),
-          expandedCrossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              answer,
-              style: TextStyle(
-                fontSize: 12,
-                height: 1.7,
-                color: isDark ? Colors.grey[400] : Colors.grey[700],
-              ),
-            ),
-          ],
+        ),
+        trailing: Icon(
+          Icons.open_in_new_rounded,
+          size: 18,
+          color: isDark ? Colors.grey[500] : Colors.grey[400],
         ),
       ),
     );
