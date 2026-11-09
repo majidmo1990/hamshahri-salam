@@ -184,7 +184,7 @@ class HomeContentScreen extends StatelessWidget {
               context,
               isDark,
             );
-            if (result != null && mounted) {
+            if (result != null) {
               await context.read<AppData>().loadProperties(
                 minPrice: result.minPrice,
                 maxPrice: result.maxPrice,
