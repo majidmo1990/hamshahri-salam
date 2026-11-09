@@ -9,10 +9,12 @@ pluginManagement {
         }
 
     includeBuild("$flutterSdkPath/packages/flutter_tools/gradle")
-
     repositories {
         google()
         mavenCentral()
+        maven { url = uri("https://maven.aliyun.com/repository/central") }      // ← mirror علی‌بابا
+        maven { url = uri("https://maven.aliyun.com/repository/google") }       // ← mirror علی‌بابا
+        maven { url = uri("https://maven.aliyun.com/repository/gradle-plugin") } // ← mirror علی‌بابا
         gradlePluginPortal()
     }
 }
