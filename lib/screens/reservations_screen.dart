@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../theme/app_theme.dart';
 import '../services/api_service.dart';
+import '../utils/date_formatter.dart';
 import 'login_screen.dart';
 import 'my_visits_screen.dart';
 
@@ -198,7 +199,7 @@ class _VideoBookingsTabState extends State<_VideoBookingsTab> {
                   color: isDark ? Colors.grey[400] : Colors.grey[600]),
               const SizedBox(width: 6),
               Text(
-                b['date'] ?? '',
+                isoToShamsi(b['date']?.toString()),
                 style: TextStyle(
                     fontSize: 12.5,
                     color: isDark ? Colors.grey[300] : Colors.grey[700]),

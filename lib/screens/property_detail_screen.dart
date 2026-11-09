@@ -7,6 +7,7 @@ import '../theme/app_theme.dart';
 import '../state/app_data.dart';
 import '../widgets/property_image.dart';
 import '../services/api_service.dart';
+import '../utils/date_formatter.dart';
 
 class PropertyDetailScreen extends StatefulWidget {
   final PropertyListing property;
