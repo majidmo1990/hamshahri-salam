@@ -4,8 +4,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:dio_smart_retry/dio_smart_retry.dart';
 import 'package:dio/io.dart';
 class ApiService {
-  static const String baseUrl = 'https://rumiland.org/hamshahri';
-  static const String siteUrl = 'https://rumiland.org';
+  static const String baseUrl = 'https://hamshahri.rumiland.org/hamshahri';
+  static const String siteUrl = 'https://hamshahri.rumiland.org';
   static final ApiService _instance = ApiService._internal();
   factory ApiService() => _instance;
   ApiService._internal();
