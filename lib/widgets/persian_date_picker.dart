@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import '../theme/app_theme.dart';
 
-/// تقویم شمسی ساده (بدون پکیج خارجی)
-/// تبدیل میلادی به شمسی (الگوریتم)
 class PersianDate {
   final int year;
   final int month;
@@ -48,7 +46,6 @@ class PersianDate {
   String get longFormatted => '$day ${monthName(month)} $year';
 }
 
-/// دیالوگ تقویم شمسی ساده (روز/ماه/سال)
 Future<DateTime?> showSimplePersianDatePicker({
   required BuildContext context,
   required DateTime initialDate,
@@ -66,77 +63,128 @@ Future<DateTime?> showSimplePersianDatePicker({
       return StatefulBuilder(
         builder: (ctx, setState) {
           final isDark = Theme.of(ctx).brightness == Brightness.dark;
-          return AlertDialog(
-            title: const Text('انتخاب تاریخ'),
-            content: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
+          
+          return Directionality(
+            textDirection: TextDirection.rtl,
+            child: AlertDialog(
+              backgroundColor: isDark ? AppColors.darkSurface : Colors.white,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+              title: Text(
+                'انتخاب تاریخ بازدید',
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w700,
+                  color: isDark ? Colors.white : Colors.black87,
+                ),
+                textAlign: TextAlign.center,
+              ),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  // نمایش تاریخ انتخاب شده در یک باکس
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                    decoration: BoxDecoration(
+                      color: isDark ? AppColors.darkBg : AppColors.skyBlue.withValues(alpha: 0.3),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Text(
+                      PersianDate(selectedYear, selectedMonth, selectedDay).longFormatted,
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w800,
+                        color: AppColors.primaryBlue,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  
+                  // ردیف انتخاب سال، ماه، روز با استایل بهتر
+                  Row(
+                    children: [
+                      // سال (فیلد بزرگ‌تر)
+                      Expanded(
+                        flex: 3,
+                        child: _buildDropdown<int>(
+                          value: selectedYear,
+                          items: List.generate(10, (i) => now.year + i),
+                          label: (y) => '$y',
+                          onChanged: (v) => setState(() => selectedYear = v!),
+                          isDark: isDark,
+                          hint: 'سال',
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      // ماه
+                      Expanded(
+                        flex: 4,
+                        child: _buildDropdown<int>(
+                          value: selectedMonth,
+                          items: List.generate(12, (i) => i + 1),
+                          label: (m) => PersianDate.monthName(m),
+                          onChanged: (v) => setState(() => selectedMonth = v!),
+                          isDark: isDark,
+                          hint: 'ماه',
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      // روز
+                      Expanded(
+                        flex: 2,
+                        child: _buildDropdown<int>(
+                          value: selectedDay,
+                          items: List.generate(31, (i) => i + 1),
+                          label: (d) => '$d',
+                          onChanged: (v) => setState(() => selectedDay = v!),
+                          isDark: isDark,
+                          hint: 'روز',
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+              actionsPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              actions: [
                 Row(
                   children: [
-                    // سال
                     Expanded(
-                      child: DropdownButton<int>(
-                        isExpanded: true,
-                        value: selectedYear,
-                        items: List.generate(10, (i) => now.year + i).map((y) {
-                          return DropdownMenuItem(value: y, child: Text('$y'));
-                        }).toList(),
-                        onChanged: (v) => setState(() => selectedYear = v!),
+                      child: OutlinedButton(
+                        onPressed: () => Navigator.pop(ctx),
+                        style: OutlinedButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(vertical: 12),
+                          side: BorderSide(color: isDark ? AppColors.darkBorder : Colors.grey.shade300),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                        ),
+                        child: Text(
+                          'لغو',
+                          style: TextStyle(color: isDark ? Colors.white : Colors.black87),
+                        ),
                       ),
                     ),
-                    const SizedBox(width: 8),
-                    // ماه
+                    const SizedBox(width: 12),
                     Expanded(
                       flex: 2,
-                      child: DropdownButton<int>(
-                        isExpanded: true,
-                        value: selectedMonth,
-                        items: List.generate(12, (i) => i + 1).map((m) {
-                          return DropdownMenuItem(
-                            value: m,
-                            child: Text(PersianDate.monthName(m)),
-                          );
-                        }).toList(),
-                        onChanged: (v) => setState(() => selectedMonth = v!),
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    // روز
-                    Expanded(
-                      child: DropdownButton<int>(
-                        isExpanded: true,
-                        value: selectedDay,
-                        items: List.generate(31, (i) => i + 1).map((d) {
-                          return DropdownMenuItem(value: d, child: Text('$d'));
-                        }).toList(),
-                        onChanged: (v) => setState(() => selectedDay = v!),
+                      child: ElevatedButton(
+                        onPressed: () {
+                          Navigator.pop(ctx, PersianDate(selectedYear, selectedMonth, selectedDay));
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppColors.goldPrimary,
+                          foregroundColor: Colors.black,
+                          padding: const EdgeInsets.symmetric(vertical: 12),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                          elevation: 0,
+                        ),
+                        child: const Text('تایید تاریخ', style: TextStyle(fontWeight: FontWeight.bold)),
                       ),
                     ),
                   ],
                 ),
-                const SizedBox(height: 12),
-                Text(
-                  PersianDate(selectedYear, selectedMonth, selectedDay).longFormatted,
-                  style: TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w700,
-                    color: AppColors.primaryBlue,
-                  ),
-                ),
               ],
             ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(ctx),
-                child: const Text('لغو'),
-              ),
-              ElevatedButton(
-                onPressed: () {
-                  Navigator.pop(ctx, PersianDate(selectedYear, selectedMonth, selectedDay));
-                },
-                child: const Text('تایید'),
-              ),
-            ],
           );
         },
       );
@@ -144,12 +192,52 @@ Future<DateTime?> showSimplePersianDatePicker({
   );
 
   if (result == null) return null;
-
-  // تبدیل شمسی به میلادی (تقریبی)
   return _shamsiToMiladi(result.year, result.month, result.day);
 }
 
-/// تبدیل شمسی به میلادی (الگوریتم)
+Widget _buildDropdown<T>({
+  required T value,
+  required List<T> items,
+  required String Function(T) label,
+  required ValueChanged<T?> onChanged,
+  required bool isDark,
+  required String hint,
+}) {
+  return Container(
+    decoration: BoxDecoration(
+      color: isDark ? AppColors.darkBg : Colors.grey.shade100,
+      borderRadius: BorderRadius.circular(12),
+      border: Border.all(color: isDark ? AppColors.darkBorder : Colors.grey.shade300),
+    ),
+    padding: const EdgeInsets.symmetric(horizontal: 8),
+    child: DropdownButtonHideUnderline(
+      child: DropdownButton<T>(
+        isExpanded: true,
+        value: value,
+        icon: Icon(Icons.expand_more, size: 18, color: isDark ? Colors.grey[400] : Colors.grey[600]),
+        dropdownColor: isDark ? AppColors.darkSurface : Colors.white,
+        style: TextStyle(
+          fontSize: 14,
+          fontWeight: FontWeight.w600,
+          color: isDark ? Colors.white : Colors.black87,
+        ),
+        items: items.map((item) {
+          return DropdownMenuItem<T>(
+            value: item,
+            child: Text(
+              label(item),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+          );
+        }).toList(),
+        onChanged: onChanged,
+        hint: Text(hint, style: const TextStyle(fontSize: 12)),
+      ),
+    ),
+  );
+}
+
 DateTime _shamsiToMiladi(int jy, int jm, int jd) {
   const gDaysInMonth = [0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334];
   int jy2 = jy;
