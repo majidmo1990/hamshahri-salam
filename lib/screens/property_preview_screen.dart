@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../theme/app_theme.dart';
 import '../widgets/property_image.dart';
+import '../services/api_service.dart';
 
 class PropertyPreviewScreen extends StatelessWidget {
   final Map<String, dynamic> data;
@@ -14,10 +15,14 @@ class PropertyPreviewScreen extends StatelessWidget {
 
   List<String> get _imageUrls {
     final fromData = data['image_urls'];
-    if (fromData is List && fromData.isNotEmpty) {
-      return fromData.cast<String>();
-    }
-    return imagePaths;
+    final raw = (fromData is List && fromData.isNotEmpty)
+        ? fromData.cast<String>()
+        : imagePaths;
+    return raw.map((p) {
+      if (p.startsWith('http://') || p.startsWith('https://')) return p;
+      // مسیر server (properties/7/xxx.jpg) → URL کامل
+      return ApiService.fullUrl(p);
+    }).toList();
   }
 
   @override
