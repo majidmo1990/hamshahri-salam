@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import '../theme/app_theme.dart';
 import '../services/api_service.dart';
 import '../utils/date_formatter.dart';
-import 'package:persian_datetime_picker/persian_datetime_picker.dart';
 import 'reservations_screen.dart';
 
 class VideoBookingScreen extends StatefulWidget {
@@ -36,14 +35,15 @@ class _VideoBookingScreenState extends State<VideoBookingScreen> {
   }
 
   Future<void> _pickDate() async {
-    final picked = await showPersianDatePicker(
+    final picked = await showDatePicker(
       context: context,
-      initialDate: Jalali.now().addDays(1),
-      firstDate: Jalali.now(),
-      lastDate: Jalali.now().addYears(1),
+      initialDate: DateTime.now().add(const Duration(days: 1)),
+      firstDate: DateTime.now(),
+      lastDate: DateTime.now().add(const Duration(days: 90)),
+      helpText: 'انتخاب تاریخ',
     );
     if (picked != null) {
-      setState(() => _date = picked.toDateTime());
+      setState(() => _date = picked);
     }
   }
 
