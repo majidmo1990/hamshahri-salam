@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:video_player/video_player.dart';
+import 'package:share_plus/share_plus.dart';
 import '../theme/app_theme.dart';
 import '../state/app_data.dart';
 import '../widgets/property_image.dart';
@@ -247,10 +248,19 @@ class _PropertyDetailScreenState extends State<PropertyDetailScreen> {
         Positioned(
           top: 8,
           left: 8,
-          child: _circleButton(
-            icon: isFavorite ? Icons.favorite_rounded : Icons.favorite_border_rounded,
-            iconColor: isFavorite ? Colors.redAccent : Colors.white,
-            onTap: () => context.read<AppData>().toggleFavorite(property.id),
+          child: Row(
+            children: [
+              _circleButton(
+                icon: Icons.share_rounded,
+                onTap: () => _shareProperty(context, property),
+              ),
+              const SizedBox(width: 8),
+              _circleButton(
+                icon: isFavorite ? Icons.favorite_rounded : Icons.favorite_border_rounded,
+                iconColor: isFavorite ? Colors.redAccent : Colors.white,
+                onTap: () => context.read<AppData>().toggleFavorite(property.id),
+              ),
+            ],
           ),
         ),
         if (property.imagePaths.length > 1 || property.videoPath != null)
@@ -394,6 +404,23 @@ class _PropertyDetailScreenState extends State<PropertyDetailScreen> {
           ),
         ],
       ),
+    );
+  }
+
+  Future<void> _shareProperty(BuildContext context, PropertyListing property) async {
+    final url = 'https://hamshahri.rumiland.org/property/${property.id}';
+    final text = '${property.title}\n'
+        '${property.district} - ${property.location}\n'
+        'قیمت: ${property.priceDisplay}\n\n'
+        'مشاهده در همشهری سلام:\n$url';
+    
+    final box = context.findRenderObject() as RenderBox?;
+    await Share.share(
+      text,
+      subject: property.title,
+      sharePositionOrigin: box != null
+          ? box.localToGlobal(Offset.zero) & box.size
+          : null,
     );
   }
 
