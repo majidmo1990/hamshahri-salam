@@ -12,6 +12,14 @@ class PropertyPreviewScreen extends StatelessWidget {
     required this.imagePaths,
   });
 
+  List<String> get _imageUrls {
+    final fromData = data['image_urls'];
+    if (fromData is List && fromData.isNotEmpty) {
+      return fromData.cast<String>();
+    }
+    return imagePaths;
+  }
+
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
@@ -25,13 +33,13 @@ class PropertyPreviewScreen extends StatelessWidget {
         body: SafeArea(
           child: ListView(
             children: [
-              if (imagePaths.isNotEmpty)
+              if (_imageUrls.isNotEmpty)
                 ClipRRect(
                   borderRadius: const BorderRadius.vertical(
                     bottom: Radius.circular(20),
                   ),
                   child: buildPropertyImage(
-                    imagePaths.first,
+                    _imageUrls.first,
                     height: 240,
                     width: double.infinity,
                   ),
@@ -128,10 +136,10 @@ class PropertyPreviewScreen extends StatelessWidget {
                         ),
                       ),
                     ],
-                    if (imagePaths.length > 1) ...[
+                    if (_imageUrls.length > 1) ...[
                       const SizedBox(height: 20),
                       Text(
-                        'عکس‌ها (${imagePaths.length})',
+                        'عکس‌ها (${_imageUrls.length})',
                         style: TextStyle(
                           fontSize: 14,
                           fontWeight: FontWeight.w700,
@@ -143,12 +151,12 @@ class PropertyPreviewScreen extends StatelessWidget {
                         height: 80,
                         child: ListView.separated(
                           scrollDirection: Axis.horizontal,
-                          itemCount: imagePaths.length,
+                          itemCount: _imageUrls.length,
                           separatorBuilder: (_, __) =>
                               const SizedBox(width: 8),
                           itemBuilder: (_, i) => ClipRRect(
                             borderRadius: BorderRadius.circular(8),
-                            child: buildPropertyImage(imagePaths[i],
+                            child: buildPropertyImage(_imageUrls[i],
                                 width: 80, height: 80, fit: BoxFit.cover),
                           ),
                         ),

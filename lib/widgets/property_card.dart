@@ -88,7 +88,20 @@ class PropertyCard extends StatelessWidget {
                     Positioned(
                       left: 8, top: 8,
                       child: GestureDetector(
-                        onTap: () => context.read<AppData>().toggleFavorite(property.id),
+                        onTap: () async {
+                            try {
+                              await context.read<AppData>().toggleFavorite(property.id);
+                            } catch (e) {
+                              if (context.mounted) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text('لطفاً وارد شوید'),
+                                    backgroundColor: Colors.red[600],
+                                  ),
+                                );
+                              }
+                            }
+                          },
                         child: Container(
                           padding: const EdgeInsets.all(6),
                           decoration: BoxDecoration(

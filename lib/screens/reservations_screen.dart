@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../theme/app_theme.dart';
 import '../services/api_service.dart';
+import 'login_screen.dart';
 import 'my_visits_screen.dart';
 
 class ReservationsScreen extends StatefulWidget {
@@ -252,16 +253,24 @@ class _VideoBookingsTabState extends State<_VideoBookingsTab> {
   }
 
   Widget _buildError(bool isDark) {
+    final isAuthError = (_error ?? '').contains('وارد شوید') ||
+        (_error ?? '').contains('unauthorized') ||
+        (_error ?? '').contains('401');
+    
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(24),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(Icons.error_outline, size: 60, color: Colors.red[400]),
+            Icon(
+              isAuthError ? Icons.lock_outline : Icons.error_outline,
+              size: 60,
+              color: isAuthError ? AppColors.goldLight : Colors.red[400],
+            ),
             const SizedBox(height: 16),
             Text(
-              'خطا در دریافت رزروها',
+              isAuthError ? 'ورود به حساب' : 'خطا در دریافت رزروها',
               style: TextStyle(
                   fontSize: 14,
                   fontWeight: FontWeight.w700,
@@ -269,17 +278,35 @@ class _VideoBookingsTabState extends State<_VideoBookingsTab> {
             ),
             const SizedBox(height: 8),
             Text(
-              _error ?? '',
+              isAuthError
+                  ? 'برای مشاهده رزروها لطفاً وارد شوید'
+                  : (_error ?? ''),
               textAlign: TextAlign.center,
               style: TextStyle(
                   fontSize: 12,
                   color: isDark ? Colors.grey[400] : Colors.grey[600]),
             ),
             const SizedBox(height: 16),
-            ElevatedButton(
-              onPressed: _loadBookings,
-              child: const Text('تلاش دوباره'),
-            ),
+            if (isAuthError)
+              ElevatedButton.icon(
+                onPressed: () async {
+                  final ok = await Navigator.of(context).push(
+                    MaterialPageRoute(builder: (_) => const LoginScreen()),
+                  );
+                  if (ok == true && mounted) _loadBookings();
+                },
+                icon: const Icon(Icons.login_rounded, size: 18),
+                label: const Text('ورود به حساب'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.goldPrimary,
+                  foregroundColor: Colors.black,
+                ),
+              )
+            else
+              ElevatedButton(
+                onPressed: _loadBookings,
+                child: const Text('تلاش دوباره'),
+              ),
           ],
         ),
       ),

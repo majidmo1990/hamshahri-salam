@@ -258,7 +258,20 @@ class _PropertyDetailScreenState extends State<PropertyDetailScreen> {
               _circleButton(
                 icon: isFavorite ? Icons.favorite_rounded : Icons.favorite_border_rounded,
                 iconColor: isFavorite ? Colors.redAccent : Colors.white,
-                onTap: () => context.read<AppData>().toggleFavorite(property.id),
+                onTap: () async {
+                try {
+                  await context.read<AppData>().toggleFavorite(property.id);
+                } catch (e) {
+                  if (mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text('لطفاً وارد شوید: $e'),
+                        backgroundColor: Colors.red[600],
+                      ),
+                    );
+                  }
+                }
+              },
               ),
             ],
           ),

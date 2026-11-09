@@ -146,22 +146,12 @@ class _PropertyFormScreenState extends State<PropertyFormScreen> {
     };
   }
 
-  Future<void> _submitProperty(List<String> images) async {
+  Future<void> _submitProperty(List<String> uploadedImagePaths) async {
     if (!mounted) return;
 
-    final api = ApiService();
-    final uploadedImagePaths = <String>[];
     final sellerPhone = context.read<AuthProvider>().phone ?? '';
 
     try {
-      for (final path in images) {
-        final file = File(path);
-        if (await file.exists()) {
-          final relPath = await api.uploadImage(file);
-          uploadedImagePaths.add(relPath);
-        }
-      }
-
       final data = <String, dynamic>{
         'deal_type': widget.dealType == DealType.rent ? 'rent' : 'sell',
         'category_id': widget.category.id,
@@ -182,7 +172,7 @@ class _PropertyFormScreenState extends State<PropertyFormScreen> {
 
       // ذخیره عکس‌های آپلودشده برای حفظ بین مراحل
       _uploadedImages.clear();
-      _uploadedImages.addAll(images);
+      _uploadedImages.addAll(uploadedImagePaths);
       
       final appData = Provider.of<AppData>(context, listen: false);
       final listing = await appData.addListing(data);
@@ -307,17 +297,19 @@ class _PropertyFormScreenState extends State<PropertyFormScreen> {
                     ),
                     MediaUploadStep(
                       onBack: () => _goToStep(1),
-                      onSubmit: (images) async {
+                      onSubmit: (uploadedPaths) async {
+                        final previewData = _buildPreviewData();
+                        previewData['image_urls'] = uploadedPaths;
                         final previewResult = await Navigator.of(context).push(
                           MaterialPageRoute(
                             builder: (_) => PropertyPreviewScreen(
-                              data: _buildPreviewData(),
-                              imagePaths: images,
+                              data: previewData,
+                              imagePaths: uploadedPaths,
                             ),
                           ),
                         );
                         if (previewResult == 'submit' && mounted) {
-                          await _submitProperty(images);
+                          await _submitProperty(uploadedPaths);
                         }
                       },
                       initialImages: _uploadedImages,

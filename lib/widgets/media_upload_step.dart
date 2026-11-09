@@ -7,7 +7,7 @@ import '../services/api_service.dart';
 
 class MediaUploadStep extends StatefulWidget {
   final VoidCallback onBack;
-  final void Function(List<String> images) onSubmit;
+  final Future<void> Function(List<String> images) onSubmit;
   final List<String>? initialImages;
 
   const MediaUploadStep({
@@ -168,7 +168,15 @@ class _MediaUploadStepState extends State<MediaUploadStep> {
     
     // بعد از همه، ثبت
     if (mounted) {
-      widget.onSubmit(uploadedPaths);
+      try {
+        await widget.onSubmit(uploadedPaths);
+      } finally {
+        if (mounted) {
+          setState(() => _isSubmitting = false);
+        }
+      }
+    } else {
+      if (mounted) setState(() => _isSubmitting = false);
     }
   }
 

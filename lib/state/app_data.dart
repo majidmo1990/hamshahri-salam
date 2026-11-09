@@ -165,6 +165,8 @@ class AppData extends ChangeNotifier {
         _favoriteIds.remove(id);
       }
       notifyListeners();
+      // خطا رو propagate کن تا UI بتونه نشون بده
+      rethrow;
     }
   }
 
