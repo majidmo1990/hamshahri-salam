@@ -10,6 +10,7 @@ import 'property_type_screen.dart';
 import 'category_selection_screen.dart';
 import 'property_list_screen.dart';
 import 'search_screen.dart';
+import '../widgets/filter_sheet.dart';
 import 'notifications_screen.dart';
 import 'login_screen.dart';
 import 'video_booking_screen.dart';
@@ -174,6 +175,33 @@ class HomeContentScreen extends StatelessWidget {
                 ],
               ),
             ),
+          ),
+        ),
+        const SizedBox(width: 10),
+        GestureDetector(
+          onTap: () async {
+            final result = await showFilterSheet(
+              context,
+              isDark,
+            );
+            if (result != null && mounted) {
+              await context.read<AppData>().loadProperties(
+                minPrice: result.minPrice,
+                maxPrice: result.maxPrice,
+                minArea: result.minArea,
+                maxArea: result.maxArea,
+              );
+            }
+          },
+          child: Container(
+            width: 44,
+            height: 44,
+            decoration: BoxDecoration(
+              color: isDark ? AppColors.darkSurface : AppColors.skyBlue,
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Icon(Icons.tune_rounded,
+                color: isDark ? Colors.grey[300] : AppColors.primaryBlue),
           ),
         ),
         const SizedBox(width: 10),

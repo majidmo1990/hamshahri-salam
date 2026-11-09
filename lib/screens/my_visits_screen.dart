@@ -175,25 +175,42 @@ class _MyVisitsScreenState extends State<MyVisitsScreen> {
                         color: isDark ? Colors.white : Colors.black87,
                       ),
                     ),
+
                     const SizedBox(height: 6),
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 8, vertical: 3),
-                      decoration: BoxDecoration(
-                        color: color.withValues(alpha: 0.15),
-                        borderRadius: BorderRadius.circular(20),
-                        border:
-                            Border.all(color: color.withValues(alpha: 0.4)),
-                      ),
-                      child: Text(
-                        st['label'] as String,
-                        style: TextStyle(
-                          fontSize: 10.5,
-                          color: color,
-                          fontWeight: FontWeight.w700,
+                    Row(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 8, vertical: 3),
+                          decoration: BoxDecoration(
+                            color: color.withValues(alpha: 0.15),
+                            borderRadius: BorderRadius.circular(20),
+                            border: Border.all(
+                                color: color.withValues(alpha: 0.4)),
+                          ),
+                          child: Text(
+                            st['label'] as String,
+                            style: TextStyle(
+                              fontSize: 10.5,
+                              color: color,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+
+                    if (status == 'new')
+                      Padding(
+                        padding: const EdgeInsets.only(top: 4),
+                        child: Text(
+                          'تا ۲۴ ساعت آینده تماس می‌گیریم',
+                          style: TextStyle(
+                            fontSize: 10,
+                            color: isDark ? Colors.grey[500] : Colors.grey[500],
+                          ),
                         ),
                       ),
-                    ),
                   ],
                 ),
               ),

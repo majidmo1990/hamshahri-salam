@@ -554,7 +554,7 @@ class _PropertyDetailScreenState extends State<PropertyDetailScreen> {
                                       ScaffoldMessenger.of(context).showSnackBar(
                                         const SnackBar(
                                           content: Text(
-                                            'درخواست شما ثبت شد ✅ کارشناسان ما به‌زودی تماس می‌گیرند',
+                                            'درخواست شما ثبت شد ✅ کارشناسان ما تا ۲۴ ساعت آینده با شما تماس می‌گیرند',
                                           ),
                                           behavior: SnackBarBehavior.floating,
                                           duration: Duration(seconds: 4),

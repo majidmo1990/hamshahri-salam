@@ -231,6 +231,10 @@ class ApiService {
     String? q,
     String? dealType,
     String? categoryId,
+    int? minPrice,
+    int? maxPrice,
+    int? minArea,
+    int? maxArea,
     int limit = 50,
     int offset = 0,
   }) async {
@@ -239,6 +243,10 @@ class ApiService {
         if (q != null && q.isNotEmpty) 'q': q,
         if (dealType != null) 'deal_type': dealType,
         if (categoryId != null) 'category_id': categoryId,
+        if (minPrice != null) 'min_price': minPrice,
+        if (maxPrice != null) 'max_price': maxPrice,
+        if (minArea != null) 'min_area': minArea,
+        if (maxArea != null) 'max_area': maxArea,
         'limit': limit,
         'offset': offset,
       });

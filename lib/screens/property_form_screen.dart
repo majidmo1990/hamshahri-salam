@@ -14,6 +14,7 @@ import 'category_selection_screen.dart';
 import 'main_navigation_screen.dart';
 import 'video_booking_screen.dart';
 import 'video_booking_screen.dart';
+import 'property_preview_screen.dart';
 
 class PropertyFormScreen extends StatefulWidget {
   final DealType dealType;
@@ -129,6 +130,20 @@ class _PropertyFormScreenState extends State<PropertyFormScreen> {
         );
       },
     );
+  }
+
+  Map<String, dynamic> _buildPreviewData() {
+    return {
+      'title': _titleController.text.trim().isEmpty
+          ? widget.category.label
+          : _titleController.text.trim(),
+      'location': _locationController.text.trim(),
+      'district': _selectedDistrict ?? kDistricts.first,
+      'price_display': _buildPriceDisplay(),
+      'description': formData['formData_description'] as String? ?? '',
+      'deal_type': widget.dealType == DealType.rent ? 'rent' : 'sell',
+      'category_label': widget.category.label,
+    };
   }
 
   Future<void> _submitProperty(List<String> images) async {
@@ -292,7 +307,19 @@ class _PropertyFormScreenState extends State<PropertyFormScreen> {
                     ),
                     MediaUploadStep(
                       onBack: () => _goToStep(1),
-                      onSubmit: (images) => _submitProperty(images),
+                      onSubmit: (images) async {
+                        final previewResult = await Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (_) => PropertyPreviewScreen(
+                              data: _buildPreviewData(),
+                              imagePaths: images,
+                            ),
+                          ),
+                        );
+                        if (previewResult == 'submit' && mounted) {
+                          await _submitProperty(images);
+                        }
+                      },
                       initialImages: _uploadedImages,
                     ),
                   ],

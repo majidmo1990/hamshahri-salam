@@ -95,6 +95,10 @@ class AppData extends ChangeNotifier {
     String? q,
     String? dealType,
     String? categoryId,
+    int? minPrice,
+    int? maxPrice,
+    int? minArea,
+    int? maxArea,
   }) async {
     _loading = true;
     _error = null;
@@ -105,6 +109,10 @@ class AppData extends ChangeNotifier {
         q: q,
         dealType: dealType,
         categoryId: categoryId,
+        minPrice: minPrice,
+        maxPrice: maxPrice,
+        minArea: minArea,
+        maxArea: maxArea,
       );
       _listings = list.map((e) => PropertyListing.fromJson(e)).toList();
       _error = null;
