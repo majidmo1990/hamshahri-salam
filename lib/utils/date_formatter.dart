@@ -11,7 +11,7 @@ String toShamsi(DateTime? date, {String separator = '/'}) {
 String toShamsiLong(DateTime? date) {
   if (date == null) return '';
   final j = Jalali.fromDateTime(date);
-  return '${j.day} ${j.monthName} ${j.year}';
+  return '${j.day} ${j.month} ${j.year}';
 }
 
 /// تبدیل DateTime میلادی به رشته شمسی + ساعت (مثلاً ۱۹ آبان ۱۴۰۴ - ۱۴:۳۰)
@@ -20,7 +20,7 @@ String toShamsiWithTime(DateTime? date) {
   final j = Jalali.fromDateTime(date);
   final h = date.hour.toString().padLeft(2, '0');
   final m = date.minute.toString().padLeft(2, '0');
-  return '${j.day} ${j.monthName} ${j.year} - $h:$m';
+  return '${j.day} ${j.month} ${j.year} - $h:$m';
 }
 
 /// تبدیل رشته تاریخ (ISO) به شمسی

@@ -54,11 +54,20 @@ jobs:
           cat android/key.properties
 
       # ===== Build =====
-      - name: Build APK (split per ABI)
+      - name: Build APK (Universal)
         run: flutter build apk --release --tree-shake-icons
 
-      - name: Upload APKs
+      - name: Build AAB
+        run: flutter build appbundle --release --tree-shake-icons
+
+      - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
           name: hamshahri-salam-apk
           path: build/app/outputs/flutter-apk/*.apk
+
+      - name: Upload AAB
+        uses: actions/upload-artifact@v4
+        with:
+          name: hamshahri-salam-aab
+          path: build/app/outputs/bundle/release/*.aab
